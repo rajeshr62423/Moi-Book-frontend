@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Moi-Book Frontend
 
-## Getting Started
+Moi-Book frontend built using Next.js with a Microservice Architecture.
 
-First, run the development server:
+Getting Started
 
-```bash
+This project is built with Next.js
+and bootstrapped with create-next-app
+.
+
+Prerequisites
+
+Make sure you have the following installed:
+
+Node.js
+npm
+Installation
+
+Clone the repository and install the dependencies:
+
+git clone https://github.com/rajeshr62423/Moi-Book-frontend.git
+cd Moi-Book-frontend
+npm install
+
+Development Server
+
+Start the development server:
+
 npm run dev
-# or
+
+You can also use:
+
 yarn dev
-# or
+
+or:
+
 pnpm dev
-# or
+
+or:
+
 bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
+in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application will automatically update when you modify the source files.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Project Structure
 
-## Learn More
+The frontend follows a modular architecture designed to work with backend microservices.
 
-To learn more about Next.js, take a look at the following resources:
+Moi-Book-frontend/
+├── app/
+├── components/
+├── public/
+├── .claude/
+├── CLAUDE.md
+├── AGENTS.md
+├── .gitignore
+├── package.json
+├── tsconfig.json
+└── README.md
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The exact project structure may change as the application grows.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Tech Stack
+Next.js
+React
+TypeScript
+Tailwind CSS
+Microservice Architecture
+Available Scripts
+Development
+npm run dev
 
-## Deploy on Vercel
+Runs the application in development mode.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Production Build
+npm run build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Creates an optimized production build.
+
+Start Production Server
+npm start
+
+Starts the application using the production build.
+
+Lint
+npm run lint
+
+Runs the project's linting checks.
+
+Environment Variables
+
+Environment-specific configuration should be stored in .env files.
+
+For example:
+
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+Do not commit environment files containing secrets, API keys, passwords, tokens, or other sensitive information.
+
+Environment files are excluded through .gitignore.
+
+Microservice Architecture
+
+Moi-Book is designed to communicate with backend services through APIs.
+
+The frontend is responsible for:
+
+User interface
+Client-side interactions
+Authentication flows
+API communication
+Data presentation
+Form handling
+Frontend validation
+
+Backend responsibilities are handled by the corresponding microservices.
+
+Fonts
+
+This project uses next/font
+for optimized font loading.
+
+The default project configuration uses the Geist font family.
+
+Learn More
+
+To learn more about Next.js, check out the following resources:
+
+Next.js Documentation
+Next.js Learn
+Next.js GitHub Repository
+Deployment
+
+The easiest way to deploy a Next.js application is using Vercel.
+
+You can also deploy the application to other platforms that support Node.js and Next.js.
+
+For more information, see the Next.js deployment documentation
+.
+
+Repository
+
+GitHub repository:
+
+https://github.com/rajeshr62423/Moi-Book-frontend
+
+Moi-Book Frontend — Next.js + Microservice Architecture
