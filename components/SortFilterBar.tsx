@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { FilterGroup, SortFilterState, SortOption } from "@/lib/useSortFilter";
 import { useOutsideClose } from "@/lib/useOutsideClose";
 import Checkbox from "@/components/ui/Checkbox";
+import Radio from "@/components/ui/Radio";
 import { CloseIcon, FilterIcon, SearchIcon, SortIcon } from "@/components/icons";
 
 interface SortFilterBarProps<T> {
@@ -132,18 +133,17 @@ export default function SortFilterBar<T>({
               </div>
               <div className="sf-panel-body">
                 {sortOptions.map((opt) => (
-                  <label className="sf-option" key={opt.value}>
-                    <input
-                      type="radio"
-                      name="sf-sort"
-                      checked={state.sort === opt.value}
-                      onChange={() => {
-                        state.setSort(opt.value);
-                        setSortOpen(false);
-                      }}
-                    />
-                    <span>{opt.label}</span>
-                  </label>
+                  <Radio
+                    key={opt.value}
+                    className="sf-option"
+                    name="sf-sort"
+                    label={opt.label}
+                    checked={state.sort === opt.value}
+                    onChange={() => {
+                      state.setSort(opt.value);
+                      setSortOpen(false);
+                    }}
+                  />
                 ))}
               </div>
             </div>

@@ -221,7 +221,7 @@ export default function DashboardPage() {
           <p className="journey-note">{t("journeyNote")}</p>
         </div>
 
-        <div className="glass">
+        <div className="glass ledger-summary-card">
           <div className="section-head">
             <h3>{t("ledgerCardTitle")}</h3>
           </div>
