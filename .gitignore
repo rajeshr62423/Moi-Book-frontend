@@ -36,6 +36,11 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+
+# Keep example environment files
+!.env.example
+!.env.template
 
 # =========================================================
 # Vercel
@@ -58,25 +63,39 @@ lerna-debug.log*
 next-env.d.ts
 
 # =========================================================
-# OS / Editor
+# OS Files
 # =========================================================
 .DS_Store
 Thumbs.db
-*.pem
+Desktop.ini
 
+# =========================================================
+# Certificates / Private Keys
+# =========================================================
+*.pem
+*.key
+*.p12
+*.pfx
+
+# =========================================================
 # VS Code
+# =========================================================
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
 !.vscode/launch.json
 
+# =========================================================
 # JetBrains
+# =========================================================
 .idea/
 *.iml
+*.ipr
+*.iws
 
 # =========================================================
-# Temporary files
+# Temporary Files
 # =========================================================
 *.tmp
 *.temp
@@ -84,6 +103,7 @@ Thumbs.db
 *.swo
 *.bak
 *.orig
+*~
 
 # =========================================================
 # Cache
@@ -92,16 +112,17 @@ Thumbs.db
 .parcel-cache/
 .turbo/
 .eslintcache
+.npm/
+.yarn/cache/
 
 # =========================================================
 # AI / Coding Agent Configuration
-# Claude / AI agent files
+# =========================================================
+# Do NOT push Claude / AI agent configuration
 CLAUDE.md
 AGENTS.md
 .claude/
 
-# =========================================================
-
-# If you create machine-specific Claude files, ignore them:
+# Machine-specific Claude files
 .claude/*.local
 .claude/**/*.local
