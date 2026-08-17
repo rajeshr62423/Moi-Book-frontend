@@ -40,7 +40,7 @@ export default function ResetPasswordPage() {
           <div id="resetFormState">
             <AuthCardLogo />
             <h2>Create a new password</h2>
-            <p className="auth-sub">Choose a new password to keep your I Moi Book account secure.</p>
+            <p className="auth-sub">Choose a new password to keep your DigiMoiBook account secure.</p>
             <form noValidate onSubmit={submit}>
               <PasswordField
                 label="New Password"

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { FilterGroup, SortFilterState, SortOption } from "@/lib/useSortFilter";
 import { useOutsideClose } from "@/lib/useOutsideClose";
+import Checkbox from "@/components/ui/Checkbox";
 import { CloseIcon, FilterIcon, SearchIcon, SortIcon } from "@/components/icons";
 
 interface SortFilterBarProps<T> {
@@ -79,14 +80,13 @@ export default function SortFilterBar<T>({
                   <div className="sf-group" key={group.key}>
                     <div className="sf-group-label">{group.label}</div>
                     {group.options.map((opt) => (
-                      <label className="sf-option" key={opt.value}>
-                        <input
-                          type="checkbox"
-                          checked={state.filters[group.key]?.has(opt.value) ?? false}
-                          onChange={() => state.toggleFilter(group.key, opt.value)}
-                        />
-                        <span>{opt.label}</span>
-                      </label>
+                      <Checkbox
+                        key={opt.value}
+                        className="sf-option"
+                        label={opt.label}
+                        checked={state.filters[group.key]?.has(opt.value) ?? false}
+                        onChange={() => state.toggleFilter(group.key, opt.value)}
+                      />
                     ))}
                   </div>
                 ))}

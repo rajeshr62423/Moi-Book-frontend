@@ -28,7 +28,7 @@ export default function SplashScreen() {
   if (!visible) return null;
 
   return (
-    <div className={`splash-shell ready${hiding ? " hide" : ""}`} role="status" aria-label="I Moi Book is loading">
+    <div className={`splash-shell ready${hiding ? " hide" : ""}`} role="status" aria-label="DigiMoiBook is loading">
       <div className="splash-content">
         <div className="splash-sparkle" aria-hidden="true">
           ✦
@@ -46,7 +46,7 @@ export default function SplashScreen() {
             <path d="M24 12 L25 8 L26 12" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
           </svg>
         </div>
-        <h1 className="splash-brand">I Moi Book</h1>
+        <h1 className="splash-brand">DigiMoiBook</h1>
         <p className="splash-tagline">
           Every Gift. Every Guest.
           <br />

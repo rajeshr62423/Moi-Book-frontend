@@ -87,7 +87,7 @@ export default function DashboardPage() {
       <div className="dashboard-top">
         <div className="hero">
           <div className="hero-content">
-            <div className="hero-eyebrow">✦ I Moi Book</div>
+            <div className="hero-eyebrow">✦ DigiMoiBook</div>
             <h1>{t("heroTitle")}</h1>
             <p>{t("heroSubtitle")}</p>
             <div className="hero-actions">

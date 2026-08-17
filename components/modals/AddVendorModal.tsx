@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ModalShell from "./ModalShell";
+import Select from "@/components/ui/Select";
 import { useModal, useToast } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
 import { EyeIcon, ImageIcon, LocationIcon, PhoneIcon, VendorsIcon } from "@/components/icons";
@@ -17,6 +18,8 @@ const CATEGORY_LABEL_KEYS: Record<string, TranslationKey> = {
   transport: "catTransport",
   others: "catOthers",
 };
+
+const CATEGORY_OPTIONS = Object.keys(CATEGORY_LABEL_KEYS) as (keyof typeof CATEGORY_LABEL_KEYS)[];
 
 export default function AddVendorModal() {
   const { t } = useI18n();
@@ -65,15 +68,12 @@ export default function AddVendorModal() {
               </div>
               <div className="field">
                 <label>{t("categoryField")}</label>
-                <select value={form.category} onChange={(e) => set("category", e.target.value)}>
-                  <option value="catering">{t("catCatering")}</option>
-                  <option value="venue">{t("catVenueChip")}</option>
-                  <option value="photography">{t("catPhotography")}</option>
-                  <option value="decoration">{t("catDecoration")}</option>
-                  <option value="entertainment">{t("catEntertainment")}</option>
-                  <option value="transport">{t("catTransport")}</option>
-                  <option value="others">{t("catOthers")}</option>
-                </select>
+                <Select
+                  value={form.category}
+                  onChange={(v) => set("category", v)}
+                  options={CATEGORY_OPTIONS.map((key) => ({ value: key, label: t(CATEGORY_LABEL_KEYS[key]) }))}
+                  aria-label={t("categoryField")}
+                />
               </div>
             </div>
           </div>

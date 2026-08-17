@@ -40,7 +40,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <path d="M24 15 V34" stroke="#fff" strokeWidth="1" opacity="0.5" />
               <path d="M24 12 L25 8 L26 12" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
             </svg>
-            <span className="name">I Moi Book</span>
+            <span className="name">DigiMoiBook</span>
           </div>
           <h1>
             Every celebration,

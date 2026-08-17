@@ -5,7 +5,7 @@ import "./globals.css";
 import StoreProvider from "./StoreProvider";
 
 export const metadata: Metadata = {
-  title: "I Moi Book — Every Celebration, Beautifully Kept",
+  title: "DigiMoiBook — Every Celebration, Beautifully Kept",
   description:
     "Organize events, guests, gifts and memories in one peaceful place.",
 };

@@ -2,10 +2,27 @@
 
 import { useState } from "react";
 import ModalShell from "./ModalShell";
+import Select from "@/components/ui/Select";
 import { useModal, useToast } from "@/lib/ui";
 import { useI18n } from "@/lib/i18n";
 import { events, guests } from "@/lib/data";
 import { EventsIcon, EyeIcon, GiftIcon, GuestsIcon, LedgerIcon } from "@/components/icons";
+
+const EVENT_OPTIONS = events.map((ev) => ({ value: ev.name, label: ev.name }));
+const GUEST_OPTIONS = guests.map((g) => ({ value: g.name, label: g.name }));
+const PAYMENT_METHODS = ["Cash", "UPI", "Bank Transfer", "Cheque", "Other"].map((v) => ({ value: v, label: v }));
+const GIFT_CATEGORIES = [
+  "Clothes",
+  "Gold",
+  "Silver",
+  "Jewellery",
+  "Household Items",
+  "Electronics",
+  "Vouchers",
+  "Gift Cards",
+  "Other",
+].map((v) => ({ value: v, label: v }));
+const GIFT_UNITS = ["pieces", "grams", "items", "kg"].map((v) => ({ value: v, label: v }));
 
 const EMPTY = {
   guest: "",
@@ -89,20 +106,30 @@ export default function CreateMoiModal() {
             </div>
             <div className="field">
               <label>{t("guestNameField")}</label>
-              <select value={form.guest} onChange={(e) => set("guest", e.target.value)} required>
-                <option value="">Select guest</option>
-                {guests.map((g) => (
-                  <option key={g.id}>{g.name}</option>
-                ))}
-              </select>
+              <Select
+                value={form.guest}
+                onChange={(v) => set("guest", v)}
+                options={GUEST_OPTIONS}
+                placeholder="Select guest"
+                required
+                name="guest"
+                searchable
+                searchPlaceholder="Search guests…"
+                aria-label={t("guestNameField")}
+              />
             </div>
             <div className="field">
               <label>{t("eventField")}</label>
-              <select value={form.event} onChange={(e) => set("event", e.target.value)} required>
-                {events.map((ev) => (
-                  <option key={ev.id}>{ev.name}</option>
-                ))}
-              </select>
+              <Select
+                value={form.event}
+                onChange={(v) => set("event", v)}
+                options={EVENT_OPTIONS}
+                required
+                name="moiEvent"
+                searchable
+                searchPlaceholder="Search events…"
+                aria-label={t("eventField")}
+              />
             </div>
           </div>
           <div className="form-section">
@@ -111,10 +138,17 @@ export default function CreateMoiModal() {
               <span>{t("moiContributionType")}</span>
             </div>
             <div className="field">
-              <select value={form.kind} onChange={(e) => set("kind", e.target.value)} required>
-                <option value="money">{t("moiTypeMoney")}</option>
-                <option value="gift">{t("moiTypeGift")}</option>
-              </select>
+              <Select
+                value={form.kind}
+                onChange={(v) => set("kind", v)}
+                options={[
+                  { value: "money", label: t("moiTypeMoney") },
+                  { value: "gift", label: t("moiTypeGift") },
+                ]}
+                required
+                name="kind"
+                aria-label={t("moiContributionType")}
+              />
             </div>
           </div>
           {!isGift && (
@@ -129,13 +163,7 @@ export default function CreateMoiModal() {
               </div>
               <div className="field">
                 <label>{t("moiPaymentMethod")}</label>
-                <select value={form.method} onChange={(e) => set("method", e.target.value)}>
-                  <option>Cash</option>
-                  <option>UPI</option>
-                  <option>Bank Transfer</option>
-                  <option>Cheque</option>
-                  <option>Other</option>
-                </select>
+                <Select value={form.method} onChange={(v) => set("method", v)} options={PAYMENT_METHODS} aria-label={t("moiPaymentMethod")} />
               </div>
               <div className="field">
                 <label>{t("moiReference")}</label>
@@ -151,17 +179,12 @@ export default function CreateMoiModal() {
               </div>
               <div className="field">
                 <label>{t("moiGiftCategory")}</label>
-                <select value={form.giftCategory} onChange={(e) => set("giftCategory", e.target.value)}>
-                  <option>Clothes</option>
-                  <option>Gold</option>
-                  <option>Silver</option>
-                  <option>Jewellery</option>
-                  <option>Household Items</option>
-                  <option>Electronics</option>
-                  <option>Vouchers</option>
-                  <option>Gift Cards</option>
-                  <option>Other</option>
-                </select>
+                <Select
+                  value={form.giftCategory}
+                  onChange={(v) => set("giftCategory", v)}
+                  options={GIFT_CATEGORIES}
+                  aria-label={t("moiGiftCategory")}
+                />
               </div>
               <div className="field">
                 <label>{t("moiGiftName")}</label>
@@ -174,12 +197,7 @@ export default function CreateMoiModal() {
                 </div>
                 <div className="field">
                   <label>{t("moiUnit")}</label>
-                  <select value={form.unit} onChange={(e) => set("unit", e.target.value)}>
-                    <option>pieces</option>
-                    <option>grams</option>
-                    <option>items</option>
-                    <option>kg</option>
-                  </select>
+                  <Select value={form.unit} onChange={(v) => set("unit", v)} options={GIFT_UNITS} aria-label={t("moiUnit")} />
                 </div>
               </div>
               <div className="field">

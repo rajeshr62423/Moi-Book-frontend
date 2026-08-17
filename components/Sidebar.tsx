@@ -7,24 +7,31 @@ import { useTheme } from "@/lib/theme";
 import { useAppLoader, useSidebar } from "@/lib/ui";
 import {
   DashboardIcon,
+  DashboardIconFilled,
   EventsIcon,
+  EventsIconFilled,
   GuestsIcon,
+  GuestsIconFilled,
   LedgerIcon,
+  LedgerIconFilled,
   MoiIcon,
+  MoiIconFilled,
   MoonIcon,
   SettingsIcon,
+  SettingsIconFilled,
   SunIcon,
   VendorsIcon,
+  VendorsIconFilled,
 } from "@/components/icons";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", key: "navDashboard" as const, Icon: DashboardIcon },
-  { href: "/events", key: "navEvents" as const, Icon: EventsIcon },
-  { href: "/moi", key: "navMoi" as const, Icon: MoiIcon },
-  { href: "/guests", key: "navGuests" as const, Icon: GuestsIcon },
-  { href: "/ledger", key: "navLedger" as const, Icon: LedgerIcon },
-  { href: "/vendors", key: "navVendors" as const, Icon: VendorsIcon },
-  { href: "/settings", key: "navSettings" as const, Icon: SettingsIcon },
+  { href: "/dashboard", key: "navDashboard" as const, Icon: DashboardIcon, IconFilled: DashboardIconFilled },
+  { href: "/events", key: "navEvents" as const, Icon: EventsIcon, IconFilled: EventsIconFilled },
+  { href: "/moi", key: "navMoi" as const, Icon: MoiIcon, IconFilled: MoiIconFilled },
+  { href: "/guests", key: "navGuests" as const, Icon: GuestsIcon, IconFilled: GuestsIconFilled },
+  { href: "/ledger", key: "navLedger" as const, Icon: LedgerIcon, IconFilled: LedgerIconFilled },
+  { href: "/vendors", key: "navVendors" as const, Icon: VendorsIcon, IconFilled: VendorsIconFilled },
+  { href: "/settings", key: "navSettings" as const, Icon: SettingsIcon, IconFilled: SettingsIconFilled },
 ];
 
 export default function Sidebar() {
@@ -62,14 +69,15 @@ export default function Sidebar() {
             <path d="M24 12 L25 8 L26 12" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
           </svg>
           <div className="logo-text">
-            <span className="name">I Moi Book</span>
+            <span className="name">DigiMoiBook</span>
             <span className="tag">Celebrations</span>
           </div>
         </div>
 
         <nav className="nav-list">
-          {NAV_ITEMS.map(({ href, key, Icon }) => {
+          {NAV_ITEMS.map(({ href, key, Icon, IconFilled }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
+            const NavIcon = active ? IconFilled : Icon;
             return (
               <Link
                 key={href}
@@ -80,7 +88,7 @@ export default function Sidebar() {
                   close();
                 }}
               >
-                <Icon />
+                <NavIcon />
                 <span>{t(key)}</span>
               </Link>
             );

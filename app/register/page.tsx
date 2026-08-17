@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthLayout, { AuthCardLogo } from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
+import Checkbox from "@/components/ui/Checkbox";
 import { validEmail, passwordRules, passwordRulesPass } from "@/lib/authValidation";
 import { useAuth } from "@/lib/auth";
 
@@ -55,7 +56,7 @@ export default function RegisterPage() {
     <AuthLayout>
       <div className="auth-card auth-panel active">
         <AuthCardLogo />
-        <h2>Create your I Moi Book</h2>
+        <h2>Create your DigiMoiBook</h2>
         <p className="auth-sub">Start beautifully organizing your celebrations.</p>
         <form noValidate onSubmit={submit}>
           <div className={`auth-field${errors.name ? " has-error" : ""}`}>
@@ -113,10 +114,7 @@ export default function RegisterPage() {
             error="Passwords must match."
           />
           <div className={`auth-field auth-terms-field${errors.terms ? " has-error" : ""}`}>
-            <label className="auth-check" htmlFor="regTerms">
-              <input type="checkbox" id="regTerms" checked={terms} onChange={(e) => setTerms(e.target.checked)} required />
-              <span>I agree to the Terms &amp; Privacy Policy</span>
-            </label>
+            <Checkbox id="regTerms" label="I agree to the Terms & Privacy Policy" checked={terms} onChange={setTerms} required />
             <div className="error">Please accept the terms.</div>
           </div>
           <button type="submit" className={`auth-btn${loading ? " loading" : ""}`} disabled={loading}>

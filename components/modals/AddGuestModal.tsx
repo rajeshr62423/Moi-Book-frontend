@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ModalShell from "./ModalShell";
+import Select from "@/components/ui/Select";
 import { useModal, useToast } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
 import { events } from "@/lib/data";
@@ -15,6 +16,9 @@ const GROUP_LABEL_KEYS: Record<string, TranslationKey> = {
   colleagues: "grpColleagues",
   relatives: "grpRelatives",
 };
+
+const GROUP_OPTIONS = Object.keys(GROUP_LABEL_KEYS) as (keyof typeof GROUP_LABEL_KEYS)[];
+const EVENT_OPTIONS = events.map((ev) => ({ value: ev.name, label: ev.name }));
 
 function initials(str: string) {
   const parts = str.trim().split(/\s+/).filter(Boolean).slice(0, 2);
@@ -68,12 +72,12 @@ export default function AddGuestModal() {
               </div>
               <div className="field">
                 <label>{t("groupField")}</label>
-                <select value={form.group} onChange={(e) => set("group", e.target.value)}>
-                  <option value="family">{t("grpFamily")}</option>
-                  <option value="friends">{t("grpFriends")}</option>
-                  <option value="colleagues">{t("grpColleagues")}</option>
-                  <option value="relatives">{t("grpRelatives")}</option>
-                </select>
+                <Select
+                  value={form.group}
+                  onChange={(v) => set("group", v)}
+                  options={GROUP_OPTIONS.map((key) => ({ value: key, label: t(GROUP_LABEL_KEYS[key]) }))}
+                  aria-label={t("groupField")}
+                />
               </div>
             </div>
           </div>
@@ -100,11 +104,14 @@ export default function AddGuestModal() {
             </div>
             <div className="field">
               <label>{t("eventField")}</label>
-              <select value={form.event} onChange={(e) => set("event", e.target.value)}>
-                {events.map((ev) => (
-                  <option key={ev.id}>{ev.name}</option>
-                ))}
-              </select>
+              <Select
+                value={form.event}
+                onChange={(v) => set("event", v)}
+                options={EVENT_OPTIONS}
+                searchable
+                searchPlaceholder="Search events…"
+                aria-label={t("eventField")}
+              />
             </div>
           </div>
         </div>

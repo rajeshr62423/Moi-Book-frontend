@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthLayout, { AuthCardLogo } from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
+import Checkbox from "@/components/ui/Checkbox";
 import { validEmail } from "@/lib/authValidation";
 import { useAuth } from "@/lib/auth";
 
@@ -72,10 +73,7 @@ export default function LoginPage() {
             error="Password is required."
           />
           <div className="auth-row">
-            <label className="auth-check" htmlFor="rememberMe">
-              <input type="checkbox" id="rememberMe" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-              <span>Remember me</span>
-            </label>
+            <Checkbox id="rememberMe" label="Remember me" checked={remember} onChange={setRemember} />
             <Link href="/forgot-password" className="auth-link">
               Forgot password?
             </Link>

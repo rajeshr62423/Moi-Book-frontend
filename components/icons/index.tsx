@@ -111,6 +111,17 @@ export function GuestsIcon(props: IconProps) {
   );
 }
 
+export function GuestsIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <circle cx="17.5" cy="8.5" r="2.6" opacity="0.7" />
+      <path d="M15.1 13.9c3.1.5 5.4 2.8 5.4 6.1h-4.3c0-2.3-.8-4.2-2.2-5.6.3-.2.7-.4 1.1-.5Z" opacity="0.7" />
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6Z" />
+    </svg>
+  );
+}
+
 export function EventsIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -120,11 +131,31 @@ export function EventsIcon(props: IconProps) {
   );
 }
 
+export function EventsIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <rect x="7" y="2" width="2.4" height="4.5" rx="1.2" />
+      <rect x="14.6" y="2" width="2.4" height="4.5" rx="1.2" />
+      <rect x="3" y="5" width="18" height="16" rx="3" opacity="0.35" />
+      <path d="M3 10h18v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3Z" />
+    </svg>
+  );
+}
+
 export function LedgerIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M4 5.5C4 4.1 6.7 3 10 3s6 1.1 6 2.5v14C16 18.1 13.3 17 10 17s-6 1.1-6 2.5Z" />
       <path d="M16 5.5c0-1.4 2-2.5 4-2.5v14c-2 0-4 1.1-4 2.5" />
+    </svg>
+  );
+}
+
+export function LedgerIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M4 5.5C4 4.1 6.7 3 10 3s6 1.1 6 2.5v14C16 18.1 13.3 17 10 17s-6 1.1-6 2.5Z" />
+      <path d="M16 5.5c0-1.4 2-2.5 4-2.5v14c-2 0-4 1.1-4 2.5Z" opacity="0.6" />
     </svg>
   );
 }
@@ -140,11 +171,28 @@ export function VendorsIcon(props: IconProps) {
   );
 }
 
+export function VendorsIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M3 4h18l1.4 5.1c.4 1.5-.8 3-2.4 3a2.6 2.6 0 0 1-2-.9 2.6 2.6 0 0 1-4 0 2.6 2.6 0 0 1-4 0 2.6 2.6 0 0 1-4 0 2.6 2.6 0 0 1-2 .9c-1.6 0-2.8-1.5-2.4-3Z" />
+      <path d="M5 11.9c.5.2 1 .3 1.5.3a4.6 4.6 0 0 0 3-1.1 4.6 4.6 0 0 0 6 0 4.6 4.6 0 0 0 3 1.1c.5 0 1-.1 1.5-.3V20a1 1 0 0 1-1 1h-4v-5h-4v5H6a1 1 0 0 1-1-1Z" opacity="0.65" />
+    </svg>
+  );
+}
+
 export function SettingsIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.6 1Z" />
+    </svg>
+  );
+}
+
+export function SettingsIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" fillRule="evenodd" clipRule="evenodd" {...props}>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.6 1ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
     </svg>
   );
 }
@@ -160,12 +208,32 @@ export function MoiIcon(props: IconProps) {
   );
 }
 
+export function MoiIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M4 12a1 1 0 0 1 1-1h3.2l2.1 2.1a2.4 2.4 0 0 0 3.4 0L15.8 11H19a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+      <path d="M11 2a1 1 0 1 1 2 0v6.6l2.3-2.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L11 8.6Z" opacity="0.7" />
+    </svg>
+  );
+}
+
 export function DashboardIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <rect x="3" y="3" width="7" height="9" rx="2" />
       <rect x="14" y="3" width="7" height="5" rx="2" />
       <rect x="14" y="12" width="7" height="9" rx="2" />
+      <rect x="3" y="16" width="7" height="5" rx="2" />
+    </svg>
+  );
+}
+
+export function DashboardIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <rect x="3" y="3" width="7" height="9" rx="2" />
+      <rect x="14" y="3" width="7" height="5" rx="2" opacity="0.7" />
+      <rect x="14" y="12" width="7" height="9" rx="2" opacity="0.7" />
       <rect x="3" y="16" width="7" height="5" rx="2" />
     </svg>
   );

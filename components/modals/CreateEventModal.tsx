@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ModalShell from "./ModalShell";
+import Select from "@/components/ui/Select";
 import { useModal, useToast } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
 import { EventsIcon, EyeIcon, ImageIcon, ListLinesIcon, LocationIcon, StarOutlineIcon } from "@/components/icons";
@@ -16,6 +17,8 @@ const TYPE_LABEL_KEYS: Record<string, TranslationKey> = {
   family: "optFamily",
   other: "optOther",
 };
+
+const TYPE_OPTIONS = Object.keys(TYPE_LABEL_KEYS) as (keyof typeof TYPE_LABEL_KEYS)[];
 
 function formatDate(iso: string) {
   if (!iso) return "";
@@ -73,14 +76,12 @@ export default function CreateEventModal() {
             </div>
             <div className="field">
               <label>{t("eventTypeField")}</label>
-              <select value={form.type} onChange={(e) => set("type", e.target.value)}>
-                <option value="wedding">{t("optWedding")}</option>
-                <option value="birthday">{t("optBirthday")}</option>
-                <option value="anniversary">{t("optAnniversary")}</option>
-                <option value="corporate">{t("optCorporate")}</option>
-                <option value="family">{t("optFamily")}</option>
-                <option value="other">{t("optOther")}</option>
-              </select>
+              <Select
+                value={form.type}
+                onChange={(v) => set("type", v)}
+                options={TYPE_OPTIONS.map((key) => ({ value: key, label: t(TYPE_LABEL_KEYS[key]) }))}
+                aria-label={t("eventTypeField")}
+              />
             </div>
           </div>
           <div className="form-section">
