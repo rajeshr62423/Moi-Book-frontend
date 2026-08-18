@@ -78,10 +78,11 @@ const APP_LOADER_MIN_MS = 380;
 /* ---------------------------------------------------------------
    Modals
    --------------------------------------------------------------- */
-export type ModalName = "createEvent" | "addGuest" | "addVendor" | "createMoi";
+export type ModalName = "createEvent" | "viewEvent" | "addGuest" | "addVendor" | "createMoi";
 interface ModalContextValue {
   activeModal: ModalName | null;
-  openModal: (name: ModalName) => void;
+  modalPayload: unknown;
+  openModal: (name: ModalName, payload?: unknown) => void;
   closeModal: () => void;
 }
 const ModalContext = createContext<ModalContextValue | null>(null);
@@ -138,13 +139,21 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const appLoaderValue = useMemo<AppLoaderContextValue>(() => ({ isLoading, show, hide }), [isLoading, show, hide]);
 
   const [activeModal, setActiveModal] = useState<ModalName | null>(null);
+  const [modalPayload, setModalPayload] = useState<unknown>(null);
   const modalValue = useMemo<ModalContextValue>(
     () => ({
       activeModal,
-      openModal: (name: ModalName) => setActiveModal(name),
-      closeModal: () => setActiveModal(null),
+      modalPayload,
+      openModal: (name: ModalName, payload: unknown = null) => {
+        setActiveModal(name);
+        setModalPayload(payload);
+      },
+      closeModal: () => {
+        setActiveModal(null);
+        setModalPayload(null);
+      },
     }),
-    [activeModal]
+    [activeModal, modalPayload]
   );
 
   return (

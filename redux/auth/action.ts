@@ -2,16 +2,20 @@ import {
   AUTH_LOGIN_REQUEST,
   AUTH_LOGIN_SUCCESS,
   AUTH_LOGIN_FAILURE,
-  AUTH_LOGIN_CLEAR,
+  AUTH_REGISTER_REQUEST,
+  AUTH_REGISTER_SUCCESS,
+  AUTH_REGISTER_FAILURE,
+  AUTH_HYDRATE,
+  AUTH_LOGOUT,
 } from "./actionType";
 
-import { LoginResponse } from "./type";
+import { AuthResult, User } from "./type";
 
 export const authLoginRequest = () => ({
   type: AUTH_LOGIN_REQUEST as typeof AUTH_LOGIN_REQUEST,
 });
 
-export const authLoginSuccess = (data: LoginResponse) => ({
+export const authLoginSuccess = (data: AuthResult) => ({
   type: AUTH_LOGIN_SUCCESS as typeof AUTH_LOGIN_SUCCESS,
   payload: data,
 });
@@ -21,12 +25,36 @@ export const authLoginFailure = (error: string) => ({
   payload: error,
 });
 
-export const authLoginClear = () => ({
-  type: AUTH_LOGIN_CLEAR as typeof AUTH_LOGIN_CLEAR,
+export const authRegisterRequest = () => ({
+  type: AUTH_REGISTER_REQUEST as typeof AUTH_REGISTER_REQUEST,
+});
+
+export const authRegisterSuccess = (data: AuthResult) => ({
+  type: AUTH_REGISTER_SUCCESS as typeof AUTH_REGISTER_SUCCESS,
+  payload: data,
+});
+
+export const authRegisterFailure = (error: string) => ({
+  type: AUTH_REGISTER_FAILURE as typeof AUTH_REGISTER_FAILURE,
+  payload: error,
+});
+
+/** Restores session from localStorage on app load (see lib/auth.tsx). `null` user means nothing was stored. */
+export const authHydrate = (data: { user: User; accessToken: string; refreshToken: string } | null) => ({
+  type: AUTH_HYDRATE as typeof AUTH_HYDRATE,
+  payload: data,
+});
+
+export const authLogout = () => ({
+  type: AUTH_LOGOUT as typeof AUTH_LOGOUT,
 });
 
 export type AuthAction =
   | ReturnType<typeof authLoginRequest>
   | ReturnType<typeof authLoginSuccess>
   | ReturnType<typeof authLoginFailure>
-  | ReturnType<typeof authLoginClear>;
+  | ReturnType<typeof authRegisterRequest>
+  | ReturnType<typeof authRegisterSuccess>
+  | ReturnType<typeof authRegisterFailure>
+  | ReturnType<typeof authHydrate>
+  | ReturnType<typeof authLogout>;

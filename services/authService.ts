@@ -1,10 +1,36 @@
 import api from "./api";
-import { LoginRequest, LoginResponse } from "@/redux/auth/type";
+import type { ApiResponse } from "./apiTypes";
+import type { AuthResult, LoginRequest, RegisterRequest, User } from "@/redux/auth/type";
 
-export const loginApi = async (
-  payload: LoginRequest,
-): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>("/auth/login", payload);
+// Returns the full envelope (not just `.data`) so callers can surface the
+// backend's own success message (e.g. via react-toastify) instead of a
+// hardcoded frontend string.
+export const loginApi = async (payload: LoginRequest): Promise<ApiResponse<AuthResult>> => {
+  const response = await api.post<ApiResponse<AuthResult>>("/auth/login", payload);
+  return response.data;
+};
 
+export const registerApi = async (payload: RegisterRequest): Promise<ApiResponse<AuthResult>> => {
+  const response = await api.post<ApiResponse<AuthResult>>("/auth/register", payload);
+  return response.data;
+};
+
+export const logoutApi = async (): Promise<ApiResponse<null>> => {
+  const response = await api.post<ApiResponse<null>>("/auth/logout");
+  return response.data;
+};
+
+export const meApi = async (): Promise<User> => {
+  const response = await api.get<ApiResponse<User>>("/users/me");
+  return response.data.data;
+};
+
+export const forgotPasswordApi = async (email: string): Promise<ApiResponse<null>> => {
+  const response = await api.post<ApiResponse<null>>("/auth/forgot-password", { email });
+  return response.data;
+};
+
+export const resetPasswordApi = async (token: string, newPassword: string): Promise<ApiResponse<null>> => {
+  const response = await api.post<ApiResponse<null>>("/auth/reset-password", { token, newPassword });
   return response.data;
 };

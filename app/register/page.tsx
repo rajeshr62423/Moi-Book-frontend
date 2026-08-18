@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import AuthLayout, { AuthCardLogo } from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
 import Checkbox from "@/components/ui/Checkbox";
 import { validEmail, passwordRules, passwordRulesPass } from "@/lib/authValidation";
 import { useAuth } from "@/lib/auth";
+
+interface RegisterValues {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirm: string;
+  terms: boolean;
+}
 
 interface Errors {
   name?: boolean;
@@ -21,36 +31,37 @@ interface Errors {
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [terms, setTerms] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
-  const [loading, setLoading] = useState(false);
 
-  const rules = passwordRules(password);
+  const formik = useFormik<RegisterValues>({
+    initialValues: { name: "", email: "", phone: "", password: "", confirm: "", terms: false },
+    // Errors previously only appeared after a submit attempt, never while
+    // typing — matched here by validating on submit only.
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const next: Errors = {};
+      if (!values.name.trim()) next.name = true;
+      if (!validEmail(values.email)) next.email = true;
+      if (!values.phone.trim()) next.phone = true;
+      if (!passwordRulesPass(passwordRules(values.password))) next.password = true;
+      if (values.password !== values.confirm) next.confirm = true;
+      if (!values.terms) next.terms = true;
+      return next;
+    },
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const result = await register({ name: values.name, email: values.email, phone: values.phone, password: values.password });
+        toast.success(result.message);
+        router.push("/dashboard");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Registration failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
-  function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const next: Errors = {};
-    if (!name.trim()) next.name = true;
-    if (!validEmail(email)) next.email = true;
-    if (!phone.trim()) next.phone = true;
-    if (!passwordRulesPass(rules)) next.password = true;
-    if (password !== confirm) next.confirm = true;
-    if (!terms) next.terms = true;
-    setErrors(next);
-    if (Object.keys(next).length) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      register(name, email);
-      router.push("/dashboard");
-    }, 1000);
-  }
+  const rules = passwordRules(formik.values.password);
 
   return (
     <AuthLayout>
@@ -58,45 +69,55 @@ export default function RegisterPage() {
         <AuthCardLogo />
         <h2>Create your DigiMoiBook</h2>
         <p className="auth-sub">Start beautifully organizing your celebrations.</p>
-        <form noValidate onSubmit={submit}>
-          <div className={`auth-field${errors.name ? " has-error" : ""}`}>
+        <form noValidate onSubmit={formik.handleSubmit}>
+          <div className={`auth-field${formik.errors.name ? " has-error" : ""}`}>
             <label htmlFor="regName">Full Name</label>
-            <input id="regName" autoComplete="name" placeholder="Enter your full name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input
+              id="regName"
+              name="name"
+              autoComplete="name"
+              placeholder="Enter your full name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              required
+            />
             <div className="error">Name is required.</div>
           </div>
-          <div className={`auth-field${errors.email ? " has-error" : ""}`}>
+          <div className={`auth-field${formik.errors.email ? " has-error" : ""}`}>
             <label htmlFor="regEmail">Email Address</label>
             <input
               type="email"
               id="regEmail"
+              name="email"
               autoComplete="email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formik.values.email}
+              onChange={formik.handleChange}
               required
             />
             <div className="error">Please enter a valid email.</div>
           </div>
-          <div className={`auth-field${errors.phone ? " has-error" : ""}`}>
+          <div className={`auth-field${formik.errors.phone ? " has-error" : ""}`}>
             <label htmlFor="regPhone">Phone Number</label>
             <input
               type="tel"
               id="regPhone"
+              name="phone"
               autoComplete="tel"
               placeholder="Enter your phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={formik.values.phone}
+              onChange={formik.handleChange}
               required
             />
             <div className="error">Phone is required.</div>
           </div>
           <PasswordField
             label="Password"
-            value={password}
-            onChange={setPassword}
+            value={formik.values.password}
+            onChange={(value) => formik.setFieldValue("password", value)}
             placeholder="Create a password"
             autoComplete="new-password"
-            hasError={errors.password}
+            hasError={!!formik.errors.password}
             error="Password does not meet requirements."
           />
           <ul className="auth-hints">
@@ -106,20 +127,26 @@ export default function RegisterPage() {
           </ul>
           <PasswordField
             label="Confirm Password"
-            value={confirm}
-            onChange={setConfirm}
+            value={formik.values.confirm}
+            onChange={(value) => formik.setFieldValue("confirm", value)}
             placeholder="Confirm your password"
             autoComplete="new-password"
-            hasError={errors.confirm}
+            hasError={!!formik.errors.confirm}
             error="Passwords must match."
           />
-          <div className={`auth-field auth-terms-field${errors.terms ? " has-error" : ""}`}>
-            <Checkbox id="regTerms" label="I agree to the Terms & Privacy Policy" checked={terms} onChange={setTerms} required />
+          <div className={`auth-field auth-terms-field${formik.errors.terms ? " has-error" : ""}`}>
+            <Checkbox
+              id="regTerms"
+              label="I agree to the Terms & Privacy Policy"
+              checked={formik.values.terms}
+              onChange={(checked) => formik.setFieldValue("terms", checked)}
+              required
+            />
             <div className="error">Please accept the terms.</div>
           </div>
-          <button type="submit" className={`auth-btn${loading ? " loading" : ""}`} disabled={loading}>
+          <button type="submit" className={`auth-btn${formik.isSubmitting ? " loading" : ""}`} disabled={formik.isSubmitting}>
             <span className="spinner" />
-            <span className="btn-label">{loading ? "Creating account..." : "Create Account"}</span>
+            <span className="btn-label">{formik.isSubmitting ? "Creating account..." : "Create Account"}</span>
           </button>
         </form>
         <div className="auth-footer">

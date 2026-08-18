@@ -1,46 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import AuthLayout, { AuthCardLogo } from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
 import Checkbox from "@/components/ui/Checkbox";
 import { validEmail } from "@/lib/authValidation";
 import { useAuth } from "@/lib/auth";
 
+interface LoginValues {
+  email: string;
+  password: string;
+  remember: boolean;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
-  const [errors, setErrors] = useState<{ email?: boolean; password?: boolean }>({});
-  const [loading, setLoading] = useState(false);
 
-  function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const nextErrors: typeof errors = {};
-    if (!validEmail(email)) nextErrors.email = true;
-    if (!password) nextErrors.password = true;
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      login(email);
-      router.push("/dashboard");
-    }, 900);
-  }
+  const formik = useFormik<LoginValues>({
+    initialValues: { email: "", password: "", remember: false },
+    // Errors previously only appeared after a submit attempt, never while
+    // typing — matched here by validating on submit only.
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: { email?: boolean; password?: boolean } = {};
+      if (!validEmail(values.email)) errors.email = true;
+      if (!values.password) errors.password = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const result = await login({ email: values.email, password: values.password });
+        toast.success(result.message);
+        router.push("/dashboard");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Login failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   function loginWithGoogle() {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      login("arun.kumar@email.com");
-      router.push("/dashboard");
-    }, 700);
+    toast.info("Google sign-in isn't set up yet — use email and password.");
   }
 
   return (
@@ -49,38 +55,44 @@ export default function LoginPage() {
         <AuthCardLogo />
         <h2>Welcome back</h2>
         <p className="auth-sub">Continue organizing the moments that matter.</p>
-        <form noValidate onSubmit={submit}>
-          <div className={`auth-field${errors.email ? " has-error" : ""}`}>
+        <form noValidate onSubmit={formik.handleSubmit}>
+          <div className={`auth-field${formik.errors.email ? " has-error" : ""}`}>
             <label htmlFor="loginEmail">Email address</label>
             <input
               type="email"
               id="loginEmail"
+              name="email"
               autoComplete="email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formik.values.email}
+              onChange={formik.handleChange}
               required
             />
             <div className="error">Please enter a valid email.</div>
           </div>
           <PasswordField
             label="Password"
-            value={password}
-            onChange={setPassword}
+            value={formik.values.password}
+            onChange={(value) => formik.setFieldValue("password", value)}
             placeholder="Enter your password"
             autoComplete="current-password"
-            hasError={errors.password}
+            hasError={!!formik.errors.password}
             error="Password is required."
           />
           <div className="auth-row">
-            <Checkbox id="rememberMe" label="Remember me" checked={remember} onChange={setRemember} />
+            <Checkbox
+              id="rememberMe"
+              label="Remember me"
+              checked={formik.values.remember}
+              onChange={(checked) => formik.setFieldValue("remember", checked)}
+            />
             <Link href="/forgot-password" className="auth-link">
               Forgot password?
             </Link>
           </div>
-          <button type="submit" className={`auth-btn${loading ? " loading" : ""}`} disabled={loading}>
+          <button type="submit" className={`auth-btn${formik.isSubmitting ? " loading" : ""}`} disabled={formik.isSubmitting}>
             <span className="spinner" />
-            <span className="btn-label">{loading ? "Signing in..." : "Sign In"}</span>
+            <span className="btn-label">{formik.isSubmitting ? "Signing in..." : "Sign In"}</span>
           </button>
         </form>
         <div className="auth-divider">or</div>

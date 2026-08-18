@@ -1,30 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useFormik } from "formik";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import AuthLayout, { AuthCardLogo } from "@/components/auth/AuthLayout";
 import { validEmail } from "@/lib/authValidation";
+import { forgotPasswordApi } from "@/services/authService";
+import { extractApiErrorMessage } from "@/services/apiTypes";
 import { CheckIcon } from "@/components/icons";
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [hasError, setHasError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+interface ForgotPasswordValues {
+  email: string;
+}
 
-  function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!validEmail(email)) {
-      setHasError(true);
-      return;
-    }
-    setHasError(false);
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-    }, 900);
-  }
+export default function ForgotPasswordPage() {
+  const formik = useFormik<ForgotPasswordValues>({
+    initialValues: { email: "" },
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: { email?: boolean } = {};
+      if (!validEmail(values.email)) errors.email = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting, setStatus }) => {
+      try {
+        const response = await forgotPasswordApi(values.email);
+        toast.success(response.message);
+        setStatus("sent");
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't send the reset email"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const sent = formik.status === "sent";
 
   return (
     <AuthLayout>
@@ -34,23 +46,24 @@ export default function ForgotPasswordPage() {
             <AuthCardLogo />
             <h2>Forgot your password?</h2>
             <p className="auth-sub">Don&apos;t worry. We&apos;ll help you get back to your celebrations.</p>
-            <form noValidate onSubmit={submit}>
-              <div className={`auth-field${hasError ? " has-error" : ""}`}>
+            <form noValidate onSubmit={formik.handleSubmit}>
+              <div className={`auth-field${formik.errors.email ? " has-error" : ""}`}>
                 <label htmlFor="forgotEmail">Email Address</label>
                 <input
                   type="email"
                   id="forgotEmail"
+                  name="email"
                   autoComplete="email"
                   placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
                   required
                 />
                 <div className="error">Please enter a valid email.</div>
               </div>
-              <button type="submit" className={`auth-btn${loading ? " loading" : ""}`} disabled={loading}>
+              <button type="submit" className={`auth-btn${formik.isSubmitting ? " loading" : ""}`} disabled={formik.isSubmitting}>
                 <span className="spinner" />
-                <span className="btn-label">{loading ? "Sending..." : "Send Reset Link"}</span>
+                <span className="btn-label">{formik.isSubmitting ? "Sending..." : "Send Reset Link"}</span>
               </button>
             </form>
             <div className="auth-footer">

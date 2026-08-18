@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import Providers from "@/components/Providers";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import StoreProvider from "./StoreProvider";
 

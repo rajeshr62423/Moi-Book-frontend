@@ -1,15 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import { useFormik } from "formik";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 import ModalShell from "./ModalShell";
 import Select from "@/components/ui/Select";
-import { useModal, useToast } from "@/lib/ui";
+import ThumbnailInput from "@/components/ui/ThumbnailInput";
+import { useModal } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
+import { saveEvent } from "@/redux/event/thunk";
+import type { AppDispatch } from "@/redux/store";
+import { extractApiErrorMessage } from "@/services/apiTypes";
+import type { EventItem, EventType } from "@/redux/event/type";
 import { EventsIcon, EyeIcon, ImageIcon, ListLinesIcon, LocationIcon, StarOutlineIcon } from "@/components/icons";
 
-const EMPTY = { name: "", type: "wedding", date: "", time: "", guests: "", location: "", budget: "", description: "" };
+interface EventFormValues {
+  name: string;
+  type: EventType;
+  date: string;
+  time: string;
+  guests: string;
+  location: string;
+  budget: string;
+  description: string;
+  thumbnail: string;
+}
 
-const TYPE_LABEL_KEYS: Record<string, TranslationKey> = {
+const EMPTY: EventFormValues = {
+  name: "",
+  type: "wedding",
+  date: "",
+  time: "",
+  guests: "",
+  location: "",
+  budget: "",
+  description: "",
+  thumbnail: "",
+};
+
+export const TYPE_LABEL_KEYS: Record<EventType, TranslationKey> = {
   wedding: "optWedding",
   birthday: "optBirthday",
   anniversary: "optAnniversary",
@@ -18,7 +48,7 @@ const TYPE_LABEL_KEYS: Record<string, TranslationKey> = {
   other: "optOther",
 };
 
-const TYPE_OPTIONS = Object.keys(TYPE_LABEL_KEYS) as (keyof typeof TYPE_LABEL_KEYS)[];
+const TYPE_OPTIONS = Object.keys(TYPE_LABEL_KEYS) as EventType[];
 
 function formatDate(iso: string) {
   if (!iso) return "";
@@ -27,38 +57,87 @@ function formatDate(iso: string) {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function toFormValues(event: EventItem): EventFormValues {
+  return {
+    name: event.name,
+    type: event.type,
+    date: event.date,
+    time: event.time,
+    guests: String(event.guests),
+    location: event.location,
+    budget: event.budget != null ? String(event.budget) : "",
+    description: event.description ?? "",
+    thumbnail: event.thumbnail ?? "",
+  };
+}
+
 export default function CreateEventModal() {
   const { t } = useI18n();
-  const { closeModal } = useModal();
-  const { showToast } = useToast();
-  const [form, setForm] = useState(EMPTY);
+  const dispatch = useDispatch<AppDispatch>();
+  const { activeModal, modalPayload, closeModal } = useModal();
+  const isOpen = activeModal === "createEvent";
+  const editing = isOpen ? (modalPayload as EventItem | null) : null;
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
 
-  function set<K extends keyof typeof EMPTY>(key: K, value: string) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  const formik = useFormik<EventFormValues>({
+    enableReinitialize: true,
+    initialValues: editing ? toFormValues(editing) : EMPTY,
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: Partial<Record<keyof EventFormValues, boolean>> = {};
+      if (!values.name.trim()) errors.name = true;
+      if (!values.date) errors.date = true;
+      if (!values.time) errors.time = true;
+      // Formik's handleChange parses type="number" inputs to an actual
+      // number (empty field becomes ""), so guests isn't always a string.
+      if (values.guests === "" || values.guests == null) errors.guests = true;
+      if (!values.location.trim()) errors.location = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      const payload = {
+        name: values.name,
+        type: values.type,
+        date: values.date,
+        time: values.time,
+        guests: Number(values.guests) || 0,
+        location: values.location,
+        budget: values.budget ? Number(values.budget.replace(/[^\d.]/g, "")) || undefined : undefined,
+        description: values.description || undefined,
+        // Sent as "" (not undefined) when cleared: undefined keys are
+        // dropped from the JSON body, so an update would silently leave
+        // the previous thumbnail in place instead of clearing it.
+        thumbnail: values.thumbnail,
+      };
+      try {
+        const response = await dispatch(saveEvent(payload, editing?.id));
+        toast.success(response.message);
+        resetForm();
+        closeModal();
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't save the event"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    closeModal();
-    setForm(EMPTY);
-    showToast(t("toastEventCreated"));
-  }
-
-  let dateStr = formatDate(form.date) || t("dateField") + "…";
-  if (form.time) dateStr += " · " + form.time;
+  let dateStr = formatDate(formik.values.date) || t("dateField") + "…";
+  if (formik.values.time) dateStr += " · " + formik.values.time;
 
   return (
     <ModalShell
       name="createEvent"
-      title={t("createEventModalTitle")}
-      onSubmit={handleSubmit}
+      title={editing ? t("editEventModalTitle") : t("createEventModalTitle")}
+      onSubmit={formik.handleSubmit}
       footer={
         <>
           <button type="button" className="btn ghost" onClick={closeModal}>
             {t("cancel")}
           </button>
-          <button type="submit" className="btn">
-            {t("createEvent")}
+          <button type="submit" className="btn" disabled={formik.isSubmitting || thumbnailUploading}>
+            {formik.isSubmitting ? "..." : thumbnailUploading ? "Uploading…" : editing ? t("saveChanges") : t("createEvent")}
           </button>
         </>
       }
@@ -70,19 +149,31 @@ export default function CreateEventModal() {
               <StarOutlineIcon />
               <span>{t("secBasicInfo")}</span>
             </div>
-            <div className="field">
+            <div className={`field${formik.errors.name ? " has-error" : ""}`}>
               <label>{t("eventNameField")}</label>
-              <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("eventNamePh")} required />
+              <input
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                placeholder={t("eventNamePh")}
+                required
+              />
             </div>
             <div className="field">
               <label>{t("eventTypeField")}</label>
               <Select
-                value={form.type}
-                onChange={(v) => set("type", v)}
+                value={formik.values.type}
+                onChange={(v) => formik.setFieldValue("type", v)}
                 options={TYPE_OPTIONS.map((key) => ({ value: key, label: t(TYPE_LABEL_KEYS[key]) }))}
                 aria-label={t("eventTypeField")}
               />
             </div>
+            <ThumbnailInput
+              value={formik.values.thumbnail}
+              onChange={(url) => formik.setFieldValue("thumbnail", url)}
+              onUploadingChange={setThumbnailUploading}
+              label="Event Photo"
+            />
           </div>
           <div className="form-section">
             <div className="form-section-head">
@@ -90,18 +181,26 @@ export default function CreateEventModal() {
               <span>{t("secSchedule")}</span>
             </div>
             <div className="field-row">
-              <div className="field">
+              <div className={`field${formik.errors.date ? " has-error" : ""}`}>
                 <label>{t("dateField")}</label>
-                <input type="date" value={form.date} onChange={(e) => set("date", e.target.value)} required />
+                <input type="date" name="date" value={formik.values.date} onChange={formik.handleChange} required />
               </div>
-              <div className="field">
+              <div className={`field${formik.errors.time ? " has-error" : ""}`}>
                 <label>{t("timeField")}</label>
-                <input type="time" value={form.time} onChange={(e) => set("time", e.target.value)} required />
+                <input type="time" name="time" value={formik.values.time} onChange={formik.handleChange} required />
               </div>
             </div>
-            <div className="field">
+            <div className={`field${formik.errors.guests ? " has-error" : ""}`}>
               <label>{t("expectedGuests")}</label>
-              <input type="number" value={form.guests} onChange={(e) => set("guests", e.target.value)} placeholder="e.g. 150" required />
+              <input
+                type="number"
+                min={0}
+                name="guests"
+                value={formik.values.guests}
+                onChange={formik.handleChange}
+                placeholder="e.g. 150"
+                required
+              />
             </div>
           </div>
           <div className="form-section">
@@ -110,13 +209,19 @@ export default function CreateEventModal() {
               <span>{t("secVenueBudget")}</span>
             </div>
             <div className="field-row">
-              <div className="field">
+              <div className={`field${formik.errors.location ? " has-error" : ""}`}>
                 <label>{t("locationField")}</label>
-                <input value={form.location} onChange={(e) => set("location", e.target.value)} placeholder="City / Venue" required />
+                <input
+                  name="location"
+                  value={formik.values.location}
+                  onChange={formik.handleChange}
+                  placeholder="City / Venue"
+                  required
+                />
               </div>
               <div className="field">
                 <label>{t("budgetField")}</label>
-                <input value={form.budget} onChange={(e) => set("budget", e.target.value)} placeholder="₹" required />
+                <input name="budget" value={formik.values.budget} onChange={formik.handleChange} placeholder="₹" />
               </div>
             </div>
           </div>
@@ -127,7 +232,12 @@ export default function CreateEventModal() {
             </div>
             <div className="field">
               <label>{t("descriptionField")}</label>
-              <input value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Optional notes" />
+              <input
+                name="description"
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                placeholder="Optional notes"
+              />
             </div>
           </div>
         </div>
@@ -137,12 +247,16 @@ export default function CreateEventModal() {
             <span>{t("livePreview")}</span>
           </div>
           <div className="live-preview-card">
-            <div className="lp-thumb">
-              <ImageIcon />
+            <div className="lp-thumb" style={formik.values.thumbnail ? { padding: 0 } : undefined}>
+              {formik.values.thumbnail ? (
+                <img src={formik.values.thumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <ImageIcon />
+              )}
             </div>
             <div className="lp-body">
-              <div className="lp-name">{form.name || "Your Event Name"}</div>
-              <div className="lp-sub">{t(TYPE_LABEL_KEYS[form.type])}</div>
+              <div className="lp-name">{formik.values.name || "Your Event Name"}</div>
+              <div className="lp-sub">{t(TYPE_LABEL_KEYS[formik.values.type])}</div>
               <div style={{ marginTop: 10 }}>
                 <div className="lp-row">
                   <EventsIcon />
@@ -150,16 +264,18 @@ export default function CreateEventModal() {
                 </div>
                 <div className="lp-row">
                   <LocationIcon />
-                  <span>{form.location || "Location TBD"}</span>
+                  <span>{formik.values.location || "Location TBD"}</span>
                 </div>
                 <div className="lp-row">
                   <span>👥</span>
-                  <b>{form.guests || "0"}</b>&nbsp;Guests
+                  <b>{formik.values.guests || "0"}</b>&nbsp;Guests
                 </div>
               </div>
               <div className="lp-foot">
                 <span className="lp-badge">{t("statusPlanning")}</span>
-                <span className="lp-amount">{form.budget ? (form.budget.startsWith("₹") ? form.budget : "₹" + form.budget) : "—"}</span>
+                <span className="lp-amount">
+                  {formik.values.budget ? (formik.values.budget.startsWith("₹") ? formik.values.budget : "₹" + formik.values.budget) : "—"}
+                </span>
               </div>
             </div>
           </div>

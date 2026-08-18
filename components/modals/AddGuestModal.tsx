@@ -1,59 +1,109 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
+import { useFormik } from "formik";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import ModalShell from "./ModalShell";
 import Select from "@/components/ui/Select";
-import { useModal, useToast } from "@/lib/ui";
+import { useModal } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
-import { events } from "@/lib/data";
+import { initials } from "@/lib/moiFormat";
+import { saveGuest } from "@/redux/guest/thunk";
+import { fetchEvents } from "@/redux/event/thunk";
+import type { AppDispatch, RootState } from "@/redux/store";
+import { extractApiErrorMessage } from "@/services/apiTypes";
+import type { GuestGroup, GuestItem } from "@/redux/guest/type";
 import { EventsIcon, EyeIcon, GuestsIcon, PhoneIcon } from "@/components/icons";
 
-const EMPTY = { name: "", group: "family", phone: "", email: "", event: events[0]?.name ?? "" };
-
-const GROUP_LABEL_KEYS: Record<string, TranslationKey> = {
+export const GROUP_LABEL_KEYS: Record<GuestGroup, TranslationKey> = {
   family: "grpFamily",
   friends: "grpFriends",
   colleagues: "grpColleagues",
   relatives: "grpRelatives",
 };
 
-const GROUP_OPTIONS = Object.keys(GROUP_LABEL_KEYS) as (keyof typeof GROUP_LABEL_KEYS)[];
-const EVENT_OPTIONS = events.map((ev) => ({ value: ev.name, label: ev.name }));
+const GROUP_OPTIONS = Object.keys(GROUP_LABEL_KEYS) as GuestGroup[];
 
-function initials(str: string) {
-  const parts = str.trim().split(/\s+/).filter(Boolean).slice(0, 2);
-  return parts.map((w) => w[0]).join("").toUpperCase() || "?";
+interface GuestFormValues {
+  name: string;
+  group: GuestGroup;
+  phone: string;
+  email: string;
+  eventId: string;
+}
+
+const EMPTY: Omit<GuestFormValues, "eventId"> = { name: "", group: "family", phone: "", email: "" };
+
+function toFormValues(guest: GuestItem): GuestFormValues {
+  return {
+    name: guest.name,
+    group: guest.group,
+    phone: guest.phone,
+    email: guest.email ?? "",
+    eventId: guest.eventId,
+  };
 }
 
 export default function AddGuestModal() {
   const { t } = useI18n();
-  const { closeModal } = useModal();
-  const { showToast } = useToast();
-  const [form, setForm] = useState(EMPTY);
+  const dispatch = useDispatch<AppDispatch>();
+  const { activeModal, modalPayload, closeModal } = useModal();
+  const isOpen = activeModal === "addGuest";
+  const editing = isOpen ? (modalPayload as GuestItem | null) : null;
+  const { items: events, loaded: eventsLoaded } = useSelector((state: RootState) => state.event);
 
-  function set<K extends keyof typeof EMPTY>(key: K, value: string) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  useEffect(() => {
+    if (!eventsLoaded) dispatch(fetchEvents()).catch(() => {});
+  }, [dispatch, eventsLoaded]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    closeModal();
-    setForm(EMPTY);
-    showToast(t("toastGuestAdded"));
-  }
+  const formik = useFormik<GuestFormValues>({
+    enableReinitialize: true,
+    initialValues: editing ? toFormValues(editing) : { ...EMPTY, eventId: events[0]?.id ?? "" },
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: Partial<Record<keyof GuestFormValues, boolean>> = {};
+      if (!values.name.trim()) errors.name = true;
+      if (!values.phone.trim()) errors.phone = true;
+      if (!values.eventId) errors.eventId = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      const payload = {
+        name: values.name,
+        group: values.group,
+        phone: values.phone,
+        email: values.email || undefined,
+        eventId: values.eventId,
+      };
+      try {
+        const response = await dispatch(saveGuest(payload, editing?.id));
+        toast.success(response.message);
+        resetForm();
+        closeModal();
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't save the guest"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const selectedEvent = events.find((ev) => ev.id === formik.values.eventId);
 
   return (
     <ModalShell
       name="addGuest"
-      title={t("addGuestModalTitle")}
-      onSubmit={handleSubmit}
+      title={editing ? t("editGuestModalTitle") : t("addGuestModalTitle")}
+      onSubmit={formik.handleSubmit}
       footer={
         <>
           <button type="button" className="btn ghost" onClick={closeModal}>
             {t("cancel")}
           </button>
-          <button type="submit" className="btn">
-            {t("addGuest")}
+          <button type="submit" className="btn" disabled={formik.isSubmitting}>
+            {formik.isSubmitting ? "..." : editing ? t("saveChanges") : t("addGuest")}
           </button>
         </>
       }
@@ -66,15 +116,15 @@ export default function AddGuestModal() {
               <span>{t("secGuestDetails")}</span>
             </div>
             <div className="field-row">
-              <div className="field">
+              <div className={`field${formik.errors.name ? " has-error" : ""}`}>
                 <label>{t("guestNameField")}</label>
-                <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Full name" required />
+                <input name="name" value={formik.values.name} onChange={formik.handleChange} placeholder="Full name" required />
               </div>
               <div className="field">
                 <label>{t("groupField")}</label>
                 <Select
-                  value={form.group}
-                  onChange={(v) => set("group", v)}
+                  value={formik.values.group}
+                  onChange={(v) => formik.setFieldValue("group", v)}
                   options={GROUP_OPTIONS.map((key) => ({ value: key, label: t(GROUP_LABEL_KEYS[key]) }))}
                   aria-label={t("groupField")}
                 />
@@ -87,13 +137,19 @@ export default function AddGuestModal() {
               <span>{t("secContactInfo")}</span>
             </div>
             <div className="field-row">
-              <div className="field">
+              <div className={`field${formik.errors.phone ? " has-error" : ""}`}>
                 <label>{t("phoneField")}</label>
-                <input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+91" required />
+                <input name="phone" value={formik.values.phone} onChange={formik.handleChange} placeholder="+91" required />
               </div>
               <div className="field">
                 <label>{t("emailField")}</label>
-                <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="name@email.com" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  placeholder="name@email.com"
+                />
               </div>
             </div>
           </div>
@@ -102,12 +158,13 @@ export default function AddGuestModal() {
               <EventsIcon />
               <span>{t("secEventAssign")}</span>
             </div>
-            <div className="field">
+            <div className={`field${formik.errors.eventId ? " has-error" : ""}`}>
               <label>{t("eventField")}</label>
               <Select
-                value={form.event}
-                onChange={(v) => set("event", v)}
-                options={EVENT_OPTIONS}
+                value={formik.values.eventId}
+                onChange={(v) => formik.setFieldValue("eventId", v)}
+                options={events.map((ev) => ({ value: ev.id, label: ev.name }))}
+                placeholder="Select event"
                 searchable
                 searchPlaceholder="Search events…"
                 aria-label={t("eventField")}
@@ -123,26 +180,26 @@ export default function AddGuestModal() {
           <div className="live-preview-card">
             <div className="lp-body">
               <div className="lp-top">
-                <div className="lp-avatar">{form.name ? initials(form.name).charAt(0) : "?"}</div>
+                <div className="lp-avatar">{formik.values.name ? initials(formik.values.name).charAt(0) : "?"}</div>
                 <div>
-                  <div className="lp-name">{form.name || "Guest Name"}</div>
-                  <div className="lp-sub">{t(GROUP_LABEL_KEYS[form.group])}</div>
+                  <div className="lp-name">{formik.values.name || "Guest Name"}</div>
+                  <div className="lp-sub">{t(GROUP_LABEL_KEYS[formik.values.group])}</div>
                 </div>
               </div>
               <div className="lp-row">
                 <PhoneIcon />
-                <span>{form.phone || "Phone number"}</span>
+                <span>{formik.values.phone || "Phone number"}</span>
               </div>
               <div className="lp-row">
                 <span>✉️</span>
-                <span>{form.email || "—"}</span>
+                <span>{formik.values.email || "—"}</span>
               </div>
               <div className="lp-row">
                 <EventsIcon />
-                <span>{form.event || "No event selected"}</span>
+                <span>{selectedEvent?.name ?? "No event selected"}</span>
               </div>
               <div className="lp-foot">
-                <span className="lp-badge">{t("pendingLabel")}</span>
+                <span className="lp-badge">{t(editing ? statusLabelKey(editing.status) : "pendingLabel")}</span>
               </div>
             </div>
           </div>
@@ -150,4 +207,10 @@ export default function AddGuestModal() {
       </div>
     </ModalShell>
   );
+}
+
+function statusLabelKey(status: GuestItem["status"]): TranslationKey {
+  if (status === "attending") return "attendingLabel";
+  if (status === "notattending") return "notAttendingLabel";
+  return "pendingLabel";
 }

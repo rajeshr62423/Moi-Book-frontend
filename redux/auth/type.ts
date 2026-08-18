@@ -1,7 +1,10 @@
+// Mirrors moi-app-backend's UserResponseDto / AuthService.AuthResult.
 export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  createdAt: string;
 }
 
 export interface LoginRequest {
@@ -9,13 +12,27 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface AuthResult extends AuthTokens {
   user: User;
-  token: string;
 }
 
 export interface AuthState {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   loading: boolean;
-  data: LoginResponse | null;
+  isReady: boolean;
   error: string | null;
 }

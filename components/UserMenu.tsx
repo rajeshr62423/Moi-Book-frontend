@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useOutsideClose } from "@/lib/useOutsideClose";
@@ -97,9 +98,10 @@ export default function UserMenu() {
             <div
               className="dropdown-item danger"
               role="menuitem"
-              onClick={() => {
+              onClick={async () => {
                 setOpen(null);
-                logout();
+                const result = await logout();
+                toast.success(result.message);
                 router.replace("/login");
               }}
             >

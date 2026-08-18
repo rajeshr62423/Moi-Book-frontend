@@ -4,46 +4,59 @@ import {
   AUTH_LOGIN_REQUEST,
   AUTH_LOGIN_SUCCESS,
   AUTH_LOGIN_FAILURE,
-  AUTH_LOGIN_CLEAR,
+  AUTH_REGISTER_REQUEST,
+  AUTH_REGISTER_SUCCESS,
+  AUTH_REGISTER_FAILURE,
+  AUTH_HYDRATE,
+  AUTH_LOGOUT,
 } from "./actionType";
 
 import { AuthState } from "./type";
+import { AuthAction } from "./action";
 
 const initialState: AuthState = {
+  user: null,
+  accessToken: null,
+  refreshToken: null,
   loading: false,
-  data: null,
+  isReady: false,
   error: null,
 };
 
-const authReducer = (
-  state: AuthState = initialState,
-  action: UnknownAction,
-): AuthState => {
-  switch (action.type) {
+const authReducer = (state: AuthState = initialState, action: UnknownAction): AuthState => {
+  const typed = action as AuthAction;
+
+  switch (typed.type) {
     case AUTH_LOGIN_REQUEST:
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      };
+    case AUTH_REGISTER_REQUEST:
+      return { ...state, loading: true, error: null };
 
     case AUTH_LOGIN_SUCCESS:
+    case AUTH_REGISTER_SUCCESS:
       return {
         ...state,
         loading: false,
-        data: action.payload as AuthState["data"],
         error: null,
+        user: typed.payload.user,
+        accessToken: typed.payload.accessToken,
+        refreshToken: typed.payload.refreshToken,
       };
 
     case AUTH_LOGIN_FAILURE:
+    case AUTH_REGISTER_FAILURE:
+      return { ...state, loading: false, error: typed.payload };
+
+    case AUTH_HYDRATE:
       return {
         ...state,
-        loading: false,
-        error: action.payload as string,
+        isReady: true,
+        user: typed.payload?.user ?? null,
+        accessToken: typed.payload?.accessToken ?? null,
+        refreshToken: typed.payload?.refreshToken ?? null,
       };
 
-    case AUTH_LOGIN_CLEAR:
-      return initialState;
+    case AUTH_LOGOUT:
+      return { ...initialState, isReady: true };
 
     default:
       return state;

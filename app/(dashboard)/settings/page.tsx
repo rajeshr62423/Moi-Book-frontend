@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { useI18n } from "@/lib/i18n";
 import { useHideAppLoaderOnMount, useToast } from "@/lib/ui";
@@ -29,7 +30,7 @@ const TAB_LABEL_KEYS: Record<TabKey, "tabProfile" | "tabPreferences" | "tabNotif
 
 const QUICK_CARDS = [
   { Icon: BackupIcon, titleKey: "backupExport" as const, subKey: "exportYourData" as const },
-  { Icon: DocumentIcon, titleKey: "templates" as const, subKey: "manageTemplates" as const },
+  { Icon: DocumentIcon, titleKey: "templates" as const, subKey: "manageTemplates" as const, href: "/settings/templates" },
   { Icon: TeamIcon, titleKey: "inviteTeam" as const, subKey: "addTeamMembers" as const },
   { Icon: PrivacyIcon, titleKey: "privacy" as const, subKey: "managePrivacy" as const },
 ];
@@ -221,13 +222,24 @@ export default function SettingsPage() {
             <h3>{t("quickSettings")}</h3>
           </div>
           <div className="quick-grid">
-            {QUICK_CARDS.map(({ Icon, titleKey, subKey }) => (
-              <div className="quick-card" key={titleKey}>
-                <Icon />
-                <div className="t">{t(titleKey)}</div>
-                <div className="s">{t(subKey)}</div>
-              </div>
-            ))}
+            {QUICK_CARDS.map(({ Icon, titleKey, subKey, href }) => {
+              const content = (
+                <>
+                  <Icon />
+                  <div className="t">{t(titleKey)}</div>
+                  <div className="s">{t(subKey)}</div>
+                </>
+              );
+              return href ? (
+                <Link className="quick-card" href={href} key={titleKey}>
+                  {content}
+                </Link>
+              ) : (
+                <div className="quick-card" key={titleKey}>
+                  {content}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
