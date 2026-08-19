@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
 import MobileToggleButton from "@/components/MobileToggleButton";
 import UserMenu from "@/components/UserMenu";
+import GlobalSearch from "@/components/GlobalSearch";
 import { TYPE_LABEL_KEYS } from "@/components/modals/CreateEventModal";
 import { statusLabel as eventStatusLabel } from "@/lib/eventFormat";
 import { formatCurrency } from "@/lib/moiFormat";
@@ -32,7 +33,6 @@ import {
   LocationIcon,
   MoiIcon,
   PlusIcon,
-  SearchIcon,
   VendorsIcon,
   WalletIcon,
 } from "@/components/icons";
@@ -74,10 +74,6 @@ export default function DashboardPage() {
   function goToEvents() {
     show();
     router.push("/events");
-  }
-
-  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" && e.currentTarget.value.trim()) goToEvents();
   }
 
   const today = new Date().toISOString().slice(0, 10);
@@ -158,10 +154,7 @@ export default function DashboardPage() {
             <path d="M84 5l3-3 3 3-3 3Z" />
           </svg>
         </div>
-        <div className="search-box glass">
-          <SearchIcon />
-          <input placeholder={t("searchDash")} onKeyDown={handleSearchKeyDown} />
-        </div>
+        <GlobalSearch />
         <UserMenu />
       </div>
 

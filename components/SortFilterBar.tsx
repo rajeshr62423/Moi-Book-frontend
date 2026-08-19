@@ -14,6 +14,12 @@ interface SortFilterBarProps<T> {
   searchPlaceholder?: string;
 }
 
+function cloneFilters(filters: Record<string, Set<string>>): Record<string, Set<string>> {
+  const next: Record<string, Set<string>> = {};
+  for (const [key, set] of Object.entries(filters)) next[key] = new Set(set);
+  return next;
+}
+
 export default function SortFilterBar<T>({
   state,
   filterGroups = [],
@@ -22,12 +28,48 @@ export default function SortFilterBar<T>({
 }: SortFilterBarProps<T>) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
+  // Checkbox edits are staged here and only committed to `state.filters`
+  // (which drives the live-filtered list) when "Apply" is clicked — so
+  // ticking a box previews nothing until you actually apply it.
+  const [pendingFilters, setPendingFilters] = useState<Record<string, Set<string>>>({});
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
 
+  function openFilterPanel() {
+    setPendingFilters(cloneFilters(state.filters));
+    setSortOpen(false);
+    setFilterOpen(true);
+  }
+
+  function closeFilterPanelWithoutApplying() {
+    setFilterOpen(false);
+  }
+
+  function togglePending(key: string, value: string) {
+    setPendingFilters((prev) => {
+      const next = cloneFilters(prev);
+      const set = new Set(next[key] ?? []);
+      if (set.has(value)) set.delete(value);
+      else set.add(value);
+      next[key] = set;
+      return next;
+    });
+  }
+
+  function applyPending() {
+    state.replaceFilters(pendingFilters);
+    setFilterOpen(false);
+  }
+
+  function clearPending() {
+    setPendingFilters({});
+    state.clearFilters();
+  }
+
   // Each panel closes independently when a click lands outside its own
   // container; Escape closes whichever panel(s) are currently open.
-  useOutsideClose([filterRef], () => setFilterOpen(false));
+  // Closing this way discards any unapplied checkbox edits.
+  useOutsideClose([filterRef], closeFilterPanelWithoutApplying);
   useOutsideClose([sortRef], () => setSortOpen(false));
 
   const hasActive = state.activeFilterCount > 0 || state.search.trim().length > 0;
@@ -54,8 +96,8 @@ export default function SortFilterBar<T>({
               aria-haspopup="true"
               onClick={(e) => {
                 e.stopPropagation();
-                setSortOpen(false);
-                setFilterOpen((v) => !v);
+                if (filterOpen) closeFilterPanelWithoutApplying();
+                else openFilterPanel();
               }}
             >
               <FilterIcon />
@@ -67,12 +109,12 @@ export default function SortFilterBar<T>({
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            <div className={`sf-backdrop${filterOpen ? " open" : ""}`} onClick={() => setFilterOpen(false)} />
+            <div className={`sf-backdrop${filterOpen ? " open" : ""}`} onClick={closeFilterPanelWithoutApplying} />
             <div className={`sf-panel sf-panel-filter${filterOpen ? " open" : ""}`} onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Filter">
               <div className="sf-panel-handle" />
               <div className="sf-panel-head">
                 <span>Filter</span>
-                <button type="button" className="sf-panel-close" onClick={() => setFilterOpen(false)}>
+                <button type="button" className="sf-panel-close" onClick={closeFilterPanelWithoutApplying}>
                   <CloseIcon />
                 </button>
               </div>
@@ -85,18 +127,18 @@ export default function SortFilterBar<T>({
                         key={opt.value}
                         className="sf-option"
                         label={opt.label}
-                        checked={state.filters[group.key]?.has(opt.value) ?? false}
-                        onChange={() => state.toggleFilter(group.key, opt.value)}
+                        checked={pendingFilters[group.key]?.has(opt.value) ?? false}
+                        onChange={() => togglePending(group.key, opt.value)}
                       />
                     ))}
                   </div>
                 ))}
               </div>
               <div className="sf-panel-foot">
-                <button type="button" className="btn ghost" onClick={() => state.clearFilters()}>
+                <button type="button" className="btn ghost" onClick={clearPending}>
                   Clear
                 </button>
-                <button type="button" className="btn" onClick={() => setFilterOpen(false)}>
+                <button type="button" className="btn" onClick={applyPending}>
                   Apply
                 </button>
               </div>
@@ -149,7 +191,15 @@ export default function SortFilterBar<T>({
             </div>
           </span>
         )}
-        <button type="button" className="sfbar-clear" hidden={!hasActive} onClick={() => state.clearAll()}>
+        <button
+          type="button"
+          className="sfbar-clear"
+          hidden={!hasActive}
+          onClick={() => {
+            setPendingFilters({});
+            state.clearAll();
+          }}
+        >
           <CloseIcon />
           <span>Clear Filters</span>
         </button>

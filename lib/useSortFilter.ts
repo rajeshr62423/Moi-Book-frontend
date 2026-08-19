@@ -43,6 +43,7 @@ export function useSortFilter<T>(items: T[], config: SortFilterConfig<T>) {
   }, []);
 
   const clearFilters = useCallback(() => setFilters({}), []);
+  const replaceFilters = useCallback((next: Record<string, Set<string>>) => setFilters(next), []);
   const clearAll = useCallback(() => {
     setSearch("");
     setFilters({});
@@ -76,6 +77,7 @@ export function useSortFilter<T>(items: T[], config: SortFilterConfig<T>) {
     filters,
     toggleFilter,
     clearFilters,
+    replaceFilters,
     clearAll,
     sort,
     setSort,
