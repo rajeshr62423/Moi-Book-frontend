@@ -917,6 +917,8 @@ html[data-theme="dark"] .lang-switch{background:rgba(41,31,21,0.75);}
 .dropdown-item.danger .dropdown-item-icon{background:var(--rose-bg);color:var(--danger, #C97A6A);}
 .dropdown-item.danger b{color:var(--danger, #C97A6A);}
 .dropdown-item.danger:hover{background:var(--rose-bg);}
+.dropdown-item.unread{background:var(--primary-soft, rgba(201,145,50,0.08));}
+.dropdown-item.unread b{color:var(--primary, var(--gold));}
 
 @media (max-width:700px){
   .dropdown{

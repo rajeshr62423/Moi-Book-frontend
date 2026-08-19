@@ -2,13 +2,16 @@
 
 import { useModal } from "@/lib/ui";
 import { useI18n } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings";
 import { statusLabel, formatEventDate, formatEventTime } from "@/lib/eventFormat";
+import { CURRENCY_SYMBOLS } from "@/lib/format";
 import { TYPE_LABEL_KEYS } from "./CreateEventModal";
 import type { EventItem } from "@/redux/event/type";
 import { CloseIcon, EditIcon, EventsIcon, ImageIcon, LocationIcon } from "@/components/icons";
 
 export default function ViewEventModal() {
   const { t } = useI18n();
+  const { settings } = useSettings();
   const { activeModal, modalPayload, closeModal, openModal } = useModal();
   const isOpen = activeModal === "viewEvent";
   const event = isOpen ? (modalPayload as EventItem | null) : null;
@@ -45,7 +48,7 @@ export default function ViewEventModal() {
                 <div className="lp-row">
                   <EventsIcon />
                   <span>
-                    {formatEventDate(event.date)} · {formatEventTime(event.time)}
+                    {formatEventDate(event.date, settings?.dateFormat)} · {formatEventTime(event.time, settings?.timeFormat)}
                   </span>
                 </div>
                 <div className="lp-row">
@@ -64,7 +67,7 @@ export default function ViewEventModal() {
               )}
               <div className="lp-foot">
                 <span className={`badge ${event.status}`}>{statusLabel(event.status, t)}</span>
-                <span className="lp-amount">{event.budget ? `₹${event.budget}` : "—"}</span>
+                <span className="lp-amount">{event.budget ? `${CURRENCY_SYMBOLS[settings?.currency ?? "INR"]}${event.budget}` : "—"}</span>
               </div>
             </div>
           </div>

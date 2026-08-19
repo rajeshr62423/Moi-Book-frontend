@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import MobileToggleButton from "@/components/MobileToggleButton";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
 import { useAppLoader, useHideAppLoaderOnMount, useModal } from "@/lib/ui";
+import { useSettings } from "@/lib/settings";
 import { guestProfiles } from "@/lib/data";
 import type { RsvpStatus } from "@/lib/types";
 import { GROUP_LABEL_KEYS } from "@/components/modals/AddGuestModal";
@@ -29,6 +30,7 @@ export default function GuestProfilePage({ params }: PageProps<"/guests/[id]">) 
   const profileMock = guestProfiles[id];
   const { t } = useI18n();
   const { openModal } = useModal();
+  const { settings } = useSettings();
   const { show } = useAppLoader();
   const router = useRouter();
 
@@ -136,12 +138,12 @@ export default function GuestProfilePage({ params }: PageProps<"/guests/[id]">) 
             <div className="gp-moi-summary">
               <div className="gp-moi-total">
                 <span>{t("moiTotalReceived")}</span>
-                <b>{formatCurrency(moiTotal)}</b>
+                <b>{formatCurrency(moiTotal, settings?.currency)}</b>
               </div>
               <div className="gp-moi-grid">
                 <div className="gp-moi-chip">
                   <span>💰 {t("moiTypeMoney")}</span>
-                  <b>{formatCurrency(moneyTotal)}</b>
+                  <b>{formatCurrency(moneyTotal, settings?.currency)}</b>
                 </div>
                 <div className="gp-moi-chip">
                   <span>🎁 {t("moiTypeGift")}</span>
@@ -155,10 +157,10 @@ export default function GuestProfilePage({ params }: PageProps<"/guests/[id]">) 
                   <div className="gp-hist-ico">{m.type === "gift" ? "🎁" : "💰"}</div>
                   <div className="gp-hist-txt">
                     <b>
-                      {moiKindLabel(m)} · {moiAmountLabel(m)}
+                      {moiKindLabel(m)} · {moiAmountLabel(m, settings?.currency)}
                     </b>
                     <span>
-                      {event?.name ?? "—"} · {formatMoiDate(m.date)}
+                      {event?.name ?? "—"} · {formatMoiDate(m.date, settings?.dateFormat)}
                     </span>
                   </div>
                 </div>

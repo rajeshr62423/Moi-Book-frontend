@@ -9,6 +9,9 @@ import {
   AUTH_REGISTER_FAILURE,
   AUTH_HYDRATE,
   AUTH_LOGOUT,
+  AUTH_UPDATE_PROFILE_REQUEST,
+  AUTH_UPDATE_PROFILE_SUCCESS,
+  AUTH_UPDATE_PROFILE_FAILURE,
 } from "./actionType";
 
 import { AuthState } from "./type";
@@ -57,6 +60,15 @@ const authReducer = (state: AuthState = initialState, action: UnknownAction): Au
 
     case AUTH_LOGOUT:
       return { ...initialState, isReady: true };
+
+    case AUTH_UPDATE_PROFILE_REQUEST:
+      return { ...state, loading: true, error: null };
+
+    case AUTH_UPDATE_PROFILE_SUCCESS:
+      return { ...state, loading: false, user: typed.payload };
+
+    case AUTH_UPDATE_PROFILE_FAILURE:
+      return { ...state, loading: false, error: typed.payload };
 
     default:
       return state;

@@ -7,6 +7,9 @@ import {
   AUTH_REGISTER_FAILURE,
   AUTH_HYDRATE,
   AUTH_LOGOUT,
+  AUTH_UPDATE_PROFILE_REQUEST,
+  AUTH_UPDATE_PROFILE_SUCCESS,
+  AUTH_UPDATE_PROFILE_FAILURE,
 } from "./actionType";
 
 import { AuthResult, User } from "./type";
@@ -49,6 +52,20 @@ export const authLogout = () => ({
   type: AUTH_LOGOUT as typeof AUTH_LOGOUT,
 });
 
+export const authUpdateProfileRequest = () => ({
+  type: AUTH_UPDATE_PROFILE_REQUEST as typeof AUTH_UPDATE_PROFILE_REQUEST,
+});
+
+export const authUpdateProfileSuccess = (user: User) => ({
+  type: AUTH_UPDATE_PROFILE_SUCCESS as typeof AUTH_UPDATE_PROFILE_SUCCESS,
+  payload: user,
+});
+
+export const authUpdateProfileFailure = (error: string) => ({
+  type: AUTH_UPDATE_PROFILE_FAILURE as typeof AUTH_UPDATE_PROFILE_FAILURE,
+  payload: error,
+});
+
 export type AuthAction =
   | ReturnType<typeof authLoginRequest>
   | ReturnType<typeof authLoginSuccess>
@@ -57,4 +74,7 @@ export type AuthAction =
   | ReturnType<typeof authRegisterSuccess>
   | ReturnType<typeof authRegisterFailure>
   | ReturnType<typeof authHydrate>
-  | ReturnType<typeof authLogout>;
+  | ReturnType<typeof authLogout>
+  | ReturnType<typeof authUpdateProfileRequest>
+  | ReturnType<typeof authUpdateProfileSuccess>
+  | ReturnType<typeof authUpdateProfileFailure>;

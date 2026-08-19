@@ -9,6 +9,7 @@ import SortFilterBar from "@/components/SortFilterBar";
 import { TYPE_LABEL_KEYS } from "@/components/modals/CreateEventModal";
 import { useI18n } from "@/lib/i18n";
 import { useHideAppLoaderOnMount, useModal } from "@/lib/ui";
+import { useSettings } from "@/lib/settings";
 import { useSortFilter } from "@/lib/useSortFilter";
 import { statusLabel, formatEventDate, formatEventTime, formatWeekday } from "@/lib/eventFormat";
 import { fetchEvents, removeEvent } from "@/redux/event/thunk";
@@ -29,6 +30,7 @@ export default function EventsPage() {
   useHideAppLoaderOnMount();
   const { t, months, weekdaysShort } = useI18n();
   const { openModal } = useModal();
+  const { settings } = useSettings();
   const dispatch = useDispatch<AppDispatch>();
   const { items: events, loaded } = useSelector((state: RootState) => state.event);
   const [deleting, setDeleting] = useState<EventItem | null>(null);
@@ -182,10 +184,10 @@ export default function EventsPage() {
                           <div className="ev-sub">{t(TYPE_LABEL_KEYS[ev.type])}</div>
                         </td>
                         <td>
-                          {formatEventDate(ev.date)}
+                          {formatEventDate(ev.date, settings?.dateFormat)}
                           <br />
                           <span className="ev-sub">
-                            {formatWeekday(ev.date)}, {formatEventTime(ev.time)}
+                            {formatWeekday(ev.date)}, {formatEventTime(ev.time, settings?.timeFormat)}
                           </span>
                         </td>
                         <td>{ev.location}</td>

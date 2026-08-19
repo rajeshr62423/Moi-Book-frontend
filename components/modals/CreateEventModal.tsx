@@ -9,6 +9,8 @@ import Select from "@/components/ui/Select";
 import ThumbnailInput from "@/components/ui/ThumbnailInput";
 import { useModal } from "@/lib/ui";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings";
+import { CURRENCY_SYMBOLS } from "@/lib/format";
 import { saveEvent } from "@/redux/event/thunk";
 import type { AppDispatch } from "@/redux/store";
 import { extractApiErrorMessage } from "@/services/apiTypes";
@@ -73,6 +75,7 @@ function toFormValues(event: EventItem): EventFormValues {
 
 export default function CreateEventModal() {
   const { t } = useI18n();
+  const { settings } = useSettings();
   const dispatch = useDispatch<AppDispatch>();
   const { activeModal, modalPayload, closeModal } = useModal();
   const isOpen = activeModal === "createEvent";
@@ -221,7 +224,7 @@ export default function CreateEventModal() {
               </div>
               <div className="field">
                 <label>{t("budgetField")}</label>
-                <input name="budget" value={formik.values.budget} onChange={formik.handleChange} placeholder="₹" />
+                <input name="budget" value={formik.values.budget} onChange={formik.handleChange} placeholder={CURRENCY_SYMBOLS[settings?.currency ?? "INR"]} />
               </div>
             </div>
           </div>
@@ -274,7 +277,11 @@ export default function CreateEventModal() {
               <div className="lp-foot">
                 <span className="lp-badge">{t("statusPlanning")}</span>
                 <span className="lp-amount">
-                  {formik.values.budget ? (formik.values.budget.startsWith("₹") ? formik.values.budget : "₹" + formik.values.budget) : "—"}
+                  {formik.values.budget
+                    ? formik.values.budget.startsWith(CURRENCY_SYMBOLS[settings?.currency ?? "INR"])
+                      ? formik.values.budget
+                      : CURRENCY_SYMBOLS[settings?.currency ?? "INR"] + formik.values.budget
+                    : "—"}
                 </span>
               </div>
             </div>

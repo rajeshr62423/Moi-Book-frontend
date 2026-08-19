@@ -8,6 +8,7 @@ import PageHeader from "@/components/PageHeader";
 import SortFilterBar from "@/components/SortFilterBar";
 import { useI18n } from "@/lib/i18n";
 import { useHideAppLoaderOnMount, useModal } from "@/lib/ui";
+import { useSettings } from "@/lib/settings";
 import { useSortFilter } from "@/lib/useSortFilter";
 import { formatCurrency, formatMoiDate, initials, moiAmountLabel, moiKindLabel } from "@/lib/moiFormat";
 import { fetchMoi, removeMoi } from "@/redux/moi/thunk";
@@ -22,6 +23,7 @@ export default function MoiPage() {
   useHideAppLoaderOnMount();
   const { t } = useI18n();
   const { openModal } = useModal();
+  const { settings } = useSettings();
   const dispatch = useDispatch<AppDispatch>();
   const { items: moiItems, loaded } = useSelector((state: RootState) => state.moi);
   const { items: events, loaded: eventsLoaded } = useSelector((state: RootState) => state.event);
@@ -76,9 +78,9 @@ export default function MoiPage() {
   }, [moiItems]);
 
   const STATS = [
-    { value: formatCurrency(stats.totalReceived), labelKey: "moiTotalReceived" as const, bg: "var(--amber-bg)", color: "var(--amber)", icon: LedgerIcon },
-    { value: formatCurrency(stats.moneyReceived), labelKey: "moiMoneyReceived" as const, bg: "var(--sage-bg)", color: "var(--sage)", icon: LedgerIcon },
-    { value: formatCurrency(stats.giftValue), labelKey: "moiGiftValue" as const, bg: "var(--rose-bg)", color: "var(--rose)", icon: MoiIcon },
+    { value: formatCurrency(stats.totalReceived, settings?.currency), labelKey: "moiTotalReceived" as const, bg: "var(--amber-bg)", color: "var(--amber)", icon: LedgerIcon },
+    { value: formatCurrency(stats.moneyReceived, settings?.currency), labelKey: "moiMoneyReceived" as const, bg: "var(--sage-bg)", color: "var(--sage)", icon: LedgerIcon },
+    { value: formatCurrency(stats.giftValue, settings?.currency), labelKey: "moiGiftValue" as const, bg: "var(--rose-bg)", color: "var(--rose)", icon: MoiIcon },
     { value: String(stats.totalContributions), labelKey: "moiTotalContributions" as const, bg: "var(--amber-bg)", color: "var(--amber)", icon: MoiIcon },
   ];
 
@@ -165,10 +167,10 @@ export default function MoiPage() {
                   </div>
                   <div className="moi-detail">
                     <span className="moi-kind">{moiKindLabel(m)}</span>
-                    <span className="moi-amount">{moiAmountLabel(m)}</span>
+                    <span className="moi-amount">{moiAmountLabel(m, settings?.currency)}</span>
                   </div>
                   <div className="moi-card-foot">
-                    <span className="moi-date">{formatMoiDate(m.date)}</span>
+                    <span className="moi-date">{formatMoiDate(m.date, settings?.dateFormat)}</span>
                     <span className="badge confirmed">{t("moiReceived")}</span>
                     <div className="row-actions">
                       <button title={t("editMoi")} onClick={() => openModal("createMoi", m)}>

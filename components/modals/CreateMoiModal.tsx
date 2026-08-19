@@ -8,6 +8,8 @@ import ModalShell from "./ModalShell";
 import Select from "@/components/ui/Select";
 import { useModal } from "@/lib/ui";
 import { useI18n } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings";
+import { CURRENCY_SYMBOLS } from "@/lib/format";
 import { formatMoiDate, initials, moiAmountLabel, moiKindLabel, PAYMENT_METHOD_LABELS, GIFT_CATEGORY_LABELS, GIFT_UNIT_LABELS } from "@/lib/moiFormat";
 import { saveMoi } from "@/redux/moi/thunk";
 import { fetchEvents } from "@/redux/event/thunk";
@@ -82,6 +84,7 @@ function toFormValues(moi: MoiItem): MoiFormValues {
 
 export default function CreateMoiModal() {
   const { t } = useI18n();
+  const { settings } = useSettings();
   const dispatch = useDispatch<AppDispatch>();
   const { activeModal, modalPayload, closeModal } = useModal();
   const isOpen = activeModal === "createMoi";
@@ -160,13 +163,16 @@ export default function CreateMoiModal() {
     giftCategory: formik.values.giftCategory,
     giftName: formik.values.giftName,
   });
-  const amountLabel = moiAmountLabel({
-    type: formik.values.type,
-    amount: Number(String(formik.values.amount).replace(/[^\d.]/g, "")) || 0,
-    giftValue: Number(String(formik.values.giftValue).replace(/[^\d.]/g, "")) || 0,
-    quantity: formik.values.quantity ? Number(formik.values.quantity) : undefined,
-    unit: formik.values.unit,
-  });
+  const amountLabel = moiAmountLabel(
+    {
+      type: formik.values.type,
+      amount: Number(String(formik.values.amount).replace(/[^\d.]/g, "")) || 0,
+      giftValue: Number(String(formik.values.giftValue).replace(/[^\d.]/g, "")) || 0,
+      quantity: formik.values.quantity ? Number(formik.values.quantity) : undefined,
+      unit: formik.values.unit,
+    },
+    settings?.currency,
+  );
 
   return (
     <ModalShell
@@ -247,7 +253,7 @@ export default function CreateMoiModal() {
               </div>
               <div className={`field${formik.errors.amount ? " has-error" : ""}`}>
                 <label>{t("moiAmount")}</label>
-                <input name="amount" value={formik.values.amount} onChange={formik.handleChange} placeholder="₹ 10,000" required />
+                <input name="amount" value={formik.values.amount} onChange={formik.handleChange} placeholder={`${CURRENCY_SYMBOLS[settings?.currency ?? "INR"]} 10,000`} required />
               </div>
               <div className="field">
                 <label>{t("moiPaymentMethod")}</label>
@@ -308,7 +314,7 @@ export default function CreateMoiModal() {
               </div>
               <div className="field">
                 <label>{t("moiGiftValueField")}</label>
-                <input name="giftValue" value={formik.values.giftValue} onChange={formik.handleChange} placeholder="₹" />
+                <input name="giftValue" value={formik.values.giftValue} onChange={formik.handleChange} placeholder={CURRENCY_SYMBOLS[settings?.currency ?? "INR"]} />
               </div>
             </div>
           )}
@@ -347,7 +353,7 @@ export default function CreateMoiModal() {
               </div>
               <div className="lp-row">
                 <EventsIcon />
-                <span>{formatMoiDate(formik.values.date) || "Select a date"}</span>
+                <span>{formatMoiDate(formik.values.date, settings?.dateFormat) || "Select a date"}</span>
               </div>
               <div className="lp-foot">
                 <span className="lp-badge">{t("moiReceived")}</span>

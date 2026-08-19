@@ -1,4 +1,6 @@
 import type { MoiGiftCategory, MoiGiftUnit, MoiItem, MoiPaymentMethod } from "@/redux/moi/type";
+import type { CurrencyOption, DateFormatOption } from "@/redux/setting/type";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 export const PAYMENT_METHOD_LABELS: Record<MoiPaymentMethod, string> = {
   cash: "Cash",
@@ -27,11 +29,8 @@ export const GIFT_UNIT_LABELS: Record<MoiGiftUnit, string> = {
   kg: "kg",
 };
 
-export function formatMoiDate(iso: string) {
-  if (!iso) return "";
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+export function formatMoiDate(iso: string, dateFormat?: DateFormatOption) {
+  return formatDate(iso, dateFormat);
 }
 
 export function initials(str: string) {
@@ -39,9 +38,7 @@ export function initials(str: string) {
   return parts.map((w) => w[0]).join("").toUpperCase() || "?";
 }
 
-export function formatCurrency(amount: number) {
-  return "₹" + amount.toLocaleString("en-IN");
-}
+export { formatCurrency };
 
 export function moiKindLabel(item: Pick<MoiItem, "type" | "method" | "giftCategory" | "giftName">) {
   if (item.type === "gift") {
@@ -50,11 +47,14 @@ export function moiKindLabel(item: Pick<MoiItem, "type" | "method" | "giftCatego
   return item.method ? PAYMENT_METHOD_LABELS[item.method] : "Cash";
 }
 
-export function moiAmountLabel(item: Pick<MoiItem, "type" | "amount" | "giftValue" | "quantity" | "unit">) {
+export function moiAmountLabel(
+  item: Pick<MoiItem, "type" | "amount" | "giftValue" | "quantity" | "unit">,
+  currency?: CurrencyOption,
+) {
   if (item.type === "money") {
-    return formatCurrency(item.amount ?? 0);
+    return formatCurrency(item.amount ?? 0, currency);
   }
-  if (item.giftValue) return formatCurrency(item.giftValue);
+  if (item.giftValue) return formatCurrency(item.giftValue, currency);
   if (item.quantity && item.unit) return `${item.quantity} ${GIFT_UNIT_LABELS[item.unit]}`;
   return "—";
 }

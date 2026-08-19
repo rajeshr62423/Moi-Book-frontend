@@ -9,12 +9,15 @@ import {
   authRegisterFailure,
   authHydrate,
   authLogout,
+  authUpdateProfileRequest,
+  authUpdateProfileSuccess,
+  authUpdateProfileFailure,
 } from "./action";
 
-import { loginApi, registerApi, logoutApi } from "@/services/authService";
+import { loginApi, registerApi, logoutApi, updateProfileApi } from "@/services/authService";
 import { extractApiErrorMessage } from "@/services/apiTypes";
-import { getStoredSession, setStoredSession, clearStoredSession } from "@/lib/tokenStorage";
-import type { LoginRequest, RegisterRequest } from "./type";
+import { getStoredSession, setStoredSession, clearStoredSession, updateStoredUser } from "@/lib/tokenStorage";
+import type { LoginRequest, RegisterRequest, UpdateProfileRequest } from "./type";
 
 export const login = (payload: LoginRequest) => async (dispatch: AppDispatch) => {
   dispatch(authLoginRequest());
@@ -63,6 +66,20 @@ export const logout = () => async (dispatch: AppDispatch) => {
   clearStoredSession();
   dispatch(authLogout());
   return { message };
+};
+
+export const updateProfile = (payload: UpdateProfileRequest) => async (dispatch: AppDispatch) => {
+  dispatch(authUpdateProfileRequest());
+  try {
+    const response = await updateProfileApi(payload);
+    updateStoredUser(response.data);
+    dispatch(authUpdateProfileSuccess(response.data));
+    return response;
+  } catch (error) {
+    const message = extractApiErrorMessage(error, "Couldn't update your profile");
+    dispatch(authUpdateProfileFailure(message));
+    throw new Error(message);
+  }
 };
 
 /**

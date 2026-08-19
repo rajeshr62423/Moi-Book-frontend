@@ -23,10 +23,18 @@ export interface ApiErrorData {
   errors?: string[];
 }
 
-/** Pulls the human-readable message out of an axios error hitting the backend's envelope. */
+/**
+ * Pulls the human-readable message out of an axios error hitting the backend's envelope.
+ * Also handles the plain Error a redux thunk re-throws after already calling this once
+ * itself (thunks catch the raw axios error, extract the message, then `throw new
+ * Error(message)` so callers awaiting the dispatch see a real error) — without this,
+ * a second extractApiErrorMessage() call in the calling component would only see
+ * `error.message` isn't `.response.data` shaped and silently fall back to the generic default.
+ */
 export function extractApiErrorMessage(error: unknown, fallback = "Something went wrong"): string {
   const err = error as { response?: { data?: ApiResponse<ApiErrorData> } } | undefined;
   const body = err?.response?.data;
-  if (!body) return fallback;
-  return body.data?.errors?.[0] ?? body.message ?? fallback;
+  if (body) return body.data?.errors?.[0] ?? body.message ?? fallback;
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }

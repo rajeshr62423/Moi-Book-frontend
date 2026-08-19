@@ -2,11 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
 import PageHeader from "@/components/PageHeader";
+import AvatarUpload from "@/components/ui/AvatarUpload";
+import Select from "@/components/ui/Select";
+import PasswordField from "@/components/auth/PasswordField";
 import { useI18n } from "@/lib/i18n";
-import { useHideAppLoaderOnMount, useToast } from "@/lib/ui";
+import { useHideAppLoaderOnMount } from "@/lib/ui";
 import { ACCENTS, useTheme, type Appearance } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
+import { useSettings } from "@/lib/settings";
+import { passwordRules, passwordRulesPass, passwordStrength } from "@/lib/authValidation";
+import { changePasswordApi } from "@/services/authService";
+import { extractApiErrorMessage } from "@/services/apiTypes";
+import type { CurrencyOption, DateFormatOption, LanguageOption, TimeFormatOption } from "@/redux/setting/type";
 import {
   BackupIcon,
   DocumentIcon,
@@ -16,6 +26,52 @@ import {
   SystemIcon,
   TeamIcon,
 } from "@/components/icons";
+
+interface ProfileFormValues {
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+}
+
+interface PreferencesFormValues {
+  dateFormat: DateFormatOption;
+  timeFormat: TimeFormatOption;
+  currency: CurrencyOption;
+  language: LanguageOption;
+}
+
+interface PasswordFormValues {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+const EMPTY_PASSWORD_FORM: PasswordFormValues = { currentPassword: "", newPassword: "", confirmPassword: "" };
+
+const DATE_FORMAT_OPTIONS = [
+  { value: "DD MMM YYYY", label: "DD MMM YYYY" },
+  { value: "DD/MM/YYYY", label: "DD/MM/YYYY" },
+  { value: "MM/DD/YYYY", label: "MM/DD/YYYY" },
+  { value: "YYYY-MM-DD", label: "YYYY-MM-DD" },
+];
+
+const TIME_FORMAT_OPTIONS = [
+  { value: "12h", label: "12 Hour (AM/PM)" },
+  { value: "24h", label: "24 Hour" },
+];
+
+const CURRENCY_OPTIONS = [
+  { value: "INR", label: "INR (₹)" },
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "GBP", label: "GBP (£)" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "ta", label: "தமிழ்" },
+];
 
 const TABS = ["profile", "preferences", "notifications", "security", "event", "payment"] as const;
 type TabKey = (typeof TABS)[number];
@@ -37,19 +93,98 @@ const QUICK_CARDS = [
 
 export default function SettingsPage() {
   useHideAppLoaderOnMount();
-  const { t } = useI18n();
-  const { showToast } = useToast();
-  const { user } = useAuth();
+  const { t, setLang } = useI18n();
+  const { user, updateProfile } = useAuth();
+  const { settings, updateSettings } = useSettings();
   const { accent, appearance, setAccent, setAppearance } = useTheme();
   const [tab, setTab] = useState<TabKey>("profile");
   const [pendingAccent, setPendingAccent] = useState(accent);
   const [pendingAppearance, setPendingAppearance] = useState<Appearance>(appearance);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  function savePreferences() {
-    setAccent(pendingAccent);
-    setAppearance(pendingAppearance);
-    showToast(t("toastPrefsSaved"));
-  }
+  const profileForm = useFormik<ProfileFormValues>({
+    enableReinitialize: true,
+    initialValues: {
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      avatar: user?.avatar ?? "",
+    },
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: Partial<Record<keyof ProfileFormValues, boolean>> = {};
+      if (!values.name.trim()) errors.name = true;
+      if (!values.email.trim()) errors.email = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const response = await updateProfile({
+          name: values.name,
+          email: values.email,
+          phone: values.phone || undefined,
+          avatar: values.avatar || undefined,
+        });
+        toast.success(response.message);
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't update your profile"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const preferencesForm = useFormik<PreferencesFormValues>({
+    enableReinitialize: true,
+    initialValues: {
+      dateFormat: settings?.dateFormat ?? "DD MMM YYYY",
+      timeFormat: settings?.timeFormat ?? "12h",
+      currency: settings?.currency ?? "INR",
+      language: settings?.language ?? "en",
+    },
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const response = await updateSettings(values);
+        setLang(values.language);
+        setAccent(pendingAccent);
+        setAppearance(pendingAppearance);
+        toast.success(response.message);
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't update your preferences"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const passwordForm = useFormik<PasswordFormValues>({
+    initialValues: EMPTY_PASSWORD_FORM,
+    validateOnChange: false,
+    validateOnBlur: false,
+    validate: (values) => {
+      const errors: Partial<Record<keyof PasswordFormValues, boolean>> = {};
+      if (!values.currentPassword) errors.currentPassword = true;
+      if (!passwordRulesPass(passwordRules(values.newPassword))) errors.newPassword = true;
+      if (values.confirmPassword !== values.newPassword) errors.confirmPassword = true;
+      return errors;
+    },
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        const response = await changePasswordApi(values.currentPassword, values.newPassword);
+        toast.success(response.message);
+        resetForm();
+      } catch (err) {
+        toast.error(extractApiErrorMessage(err, "Couldn't change your password"));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const newPasswordRules = passwordRules(passwordForm.values.newPassword);
+  const newPasswordStrength = passwordStrength(newPasswordRules);
+  const newPasswordStrengthLabel = newPasswordStrength === "weak" ? "Weak" : newPasswordStrength === "fair" ? "Fair" : "Strong";
 
   return (
     <>
@@ -65,58 +200,80 @@ export default function SettingsPage() {
           </div>
 
           {tab === "profile" && (
-            <div className="form-body">
-              <div className="profile-photo-row" style={{ display: "flex", alignItems: "center", gap: 18 }}>
-                <div className="avatar-lg">{(user?.name || "A").charAt(0)}</div>
-                <div>
-                  <button className="btn outline small">{t("changePhoto")}</button>
-                </div>
-              </div>
+            <form className="form-body" onSubmit={profileForm.handleSubmit}>
+              <AvatarUpload
+                value={profileForm.values.avatar}
+                onChange={(url) => profileForm.setFieldValue("avatar", url)}
+                fallback={(user?.name || "A").charAt(0)}
+                label={t("changePhoto")}
+                onUploadingChange={setAvatarUploading}
+              />
               <div className="field-row">
-                <div className="field">
+                <div className={`field${profileForm.errors.name ? " has-error" : ""}`}>
                   <label>{t("fullName")}</label>
-                  <input defaultValue={user?.name ?? "Arun Kumar"} />
+                  <input name="name" value={profileForm.values.name} onChange={profileForm.handleChange} />
                 </div>
-                <div className="field">
+                <div className={`field${profileForm.errors.email ? " has-error" : ""}`}>
                   <label>{t("emailField")}</label>
-                  <input defaultValue={user?.email ?? "arun.kumar@email.com"} />
+                  <input name="email" value={profileForm.values.email} onChange={profileForm.handleChange} />
                 </div>
               </div>
               <div className="field-row">
                 <div className="field">
                   <label>{t("phoneField")}</label>
-                  <input defaultValue="+91 98765 43210" />
-                </div>
-                <div className="field">
-                  <label>{t("roleField")}</label>
-                  <input defaultValue="Event Manager" />
+                  <input name="phone" value={profileForm.values.phone} onChange={profileForm.handleChange} />
                 </div>
               </div>
-              <button className="btn" style={{ marginTop: 22 }} onClick={() => showToast(t("toastProfileSaved"))}>
+              <button
+                type="submit"
+                className="btn"
+                style={{ marginTop: 22 }}
+                disabled={profileForm.isSubmitting || avatarUploading}
+              >
                 {t("saveChanges")}
               </button>
-            </div>
+            </form>
           )}
 
           {tab === "preferences" && (
-            <div className="form-body">
+            <form className="form-body" onSubmit={preferencesForm.handleSubmit}>
               <div className="field">
                 <label>{t("dateFormat")}</label>
-                <input defaultValue="DD MMM YYYY" />
+                <Select
+                  value={preferencesForm.values.dateFormat}
+                  onChange={(v) => preferencesForm.setFieldValue("dateFormat", v)}
+                  options={DATE_FORMAT_OPTIONS}
+                  aria-label={t("dateFormat")}
+                />
               </div>
               <div className="field-row">
                 <div className="field">
                   <label>{t("timeFormat")}</label>
-                  <input defaultValue="12 Hour (AM/PM)" />
+                  <Select
+                    value={preferencesForm.values.timeFormat}
+                    onChange={(v) => preferencesForm.setFieldValue("timeFormat", v)}
+                    options={TIME_FORMAT_OPTIONS}
+                    aria-label={t("timeFormat")}
+                  />
                 </div>
                 <div className="field">
                   <label>{t("currencyField")}</label>
-                  <input defaultValue="INR (₹)" />
+                  <Select
+                    value={preferencesForm.values.currency}
+                    onChange={(v) => preferencesForm.setFieldValue("currency", v)}
+                    options={CURRENCY_OPTIONS}
+                    aria-label={t("currencyField")}
+                  />
                 </div>
               </div>
               <div className="field">
                 <label>{t("languageField")}</label>
-                <input defaultValue="English" />
+                <Select
+                  value={preferencesForm.values.language}
+                  onChange={(v) => preferencesForm.setFieldValue("language", v)}
+                  options={LANGUAGE_OPTIONS}
+                  aria-label={t("languageField")}
+                />
               </div>
 
               <label className="theme-section-label">{t("appearanceField")}</label>
@@ -157,10 +314,10 @@ export default function SettingsPage() {
                 ))}
               </div>
 
-              <button className="btn" style={{ marginTop: 22 }} onClick={savePreferences}>
+              <button type="submit" className="btn" style={{ marginTop: 22 }} disabled={preferencesForm.isSubmitting}>
                 {t("savePreferences")}
               </button>
-            </div>
+            </form>
           )}
 
           {tab === "notifications" && (
@@ -178,16 +335,56 @@ export default function SettingsPage() {
           )}
 
           {tab === "security" && (
-            <div className="form-body">
-              <div className="field">
-                <label>{t("passwordField")}</label>
-                <input type="password" defaultValue="••••••••••" />
-              </div>
-              <div className="field" style={{ marginTop: 14 }}>
+            <form className="form-body" onSubmit={passwordForm.handleSubmit}>
+              <PasswordField
+                label="Current Password"
+                value={passwordForm.values.currentPassword}
+                onChange={(v) => passwordForm.setFieldValue("currentPassword", v)}
+                placeholder="Enter current password"
+                autoComplete="current-password"
+                hasError={!!passwordForm.errors.currentPassword}
+                error="Current password is required."
+              />
+              <PasswordField
+                label="New Password"
+                value={passwordForm.values.newPassword}
+                onChange={(v) => passwordForm.setFieldValue("newPassword", v)}
+                placeholder="Enter new password"
+                autoComplete="new-password"
+                hasError={!!passwordForm.errors.newPassword}
+              />
+              {passwordForm.values.newPassword && (
+                <>
+                  <div className={`auth-strength ${newPasswordStrength}`}>
+                    <span />
+                  </div>
+                  <div className="auth-strength-label">Password strength: {newPasswordStrengthLabel}</div>
+                </>
+              )}
+              <ul className="auth-hints">
+                <li className={newPasswordRules.len ? "ok" : ""}>At least 8 characters</li>
+                <li className={newPasswordRules.upper ? "ok" : ""}>One uppercase letter</li>
+                <li className={newPasswordRules.num ? "ok" : ""}>One number</li>
+              </ul>
+              <PasswordField
+                label="Confirm New Password"
+                value={passwordForm.values.confirmPassword}
+                onChange={(v) => passwordForm.setFieldValue("confirmPassword", v)}
+                placeholder="Confirm new password"
+                autoComplete="new-password"
+                hasError={!!passwordForm.errors.confirmPassword}
+                error="Passwords must match."
+              />
+              <button type="submit" className="btn" style={{ marginTop: 22 }} disabled={passwordForm.isSubmitting}>
+                {passwordForm.isSubmitting ? "Updating…" : "Change Password"}
+              </button>
+
+              <div className="field" style={{ marginTop: 26 }}>
                 <label>{t("twoFactor")}</label>
-                <input defaultValue="Off" />
+                <input defaultValue="Off" disabled />
+                <span className="field-hint">Coming soon</span>
               </div>
-            </div>
+            </form>
           )}
 
           {tab === "event" && (

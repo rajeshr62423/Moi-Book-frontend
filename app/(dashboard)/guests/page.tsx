@@ -10,6 +10,7 @@ import SortFilterBar from "@/components/SortFilterBar";
 import { GROUP_LABEL_KEYS } from "@/components/modals/AddGuestModal";
 import { useI18n, type TranslationKey } from "@/lib/i18n";
 import { useAppLoader, useHideAppLoaderOnMount, useModal } from "@/lib/ui";
+import { useSettings } from "@/lib/settings";
 import { useSortFilter } from "@/lib/useSortFilter";
 import { formatEventDate } from "@/lib/eventFormat";
 import { fetchGuests, removeGuest } from "@/redux/guest/thunk";
@@ -39,6 +40,7 @@ export default function GuestsPage() {
   useHideAppLoaderOnMount();
   const { t } = useI18n();
   const { openModal } = useModal();
+  const { settings } = useSettings();
   const { show } = useAppLoader();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
@@ -205,7 +207,7 @@ export default function GuestsPage() {
                       <td>
                         {event?.name ?? "—"}
                         <br />
-                        <span className="ev-sub">{event ? formatEventDate(event.date) : ""}</span>
+                        <span className="ev-sub">{event ? formatEventDate(event.date, settings?.dateFormat) : ""}</span>
                       </td>
                       <td>
                         <span className={`badge ${g.status}`}>{statusLabel(g.status, t)}</span>

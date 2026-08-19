@@ -58,6 +58,16 @@ export function updateStoredTokens(accessToken: string, refreshToken: string): v
   } catch {}
 }
 
+/** Updates just the cached user (post profile-edit), keeping tokens as-is. */
+export function updateStoredUser(user: User): void {
+  try {
+    const existing = getStoredSession();
+    if (existing) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...existing, user }));
+    }
+  } catch {}
+}
+
 export function clearStoredSession(): void {
   try {
     localStorage.removeItem(SESSION_KEY);

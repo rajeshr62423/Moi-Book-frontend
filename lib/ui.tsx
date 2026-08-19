@@ -78,7 +78,7 @@ const APP_LOADER_MIN_MS = 380;
 /* ---------------------------------------------------------------
    Modals
    --------------------------------------------------------------- */
-export type ModalName = "createEvent" | "viewEvent" | "addGuest" | "addVendor" | "createMoi";
+export type ModalName = "createEvent" | "viewEvent" | "addGuest" | "addVendor" | "createMoi" | "addLedger";
 interface ModalContextValue {
   activeModal: ModalName | null;
   modalPayload: unknown;

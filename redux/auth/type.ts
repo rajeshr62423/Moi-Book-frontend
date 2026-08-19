@@ -4,7 +4,15 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  avatar?: string;
   createdAt: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
 }
 
 export interface LoginRequest {

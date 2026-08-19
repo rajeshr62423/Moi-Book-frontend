@@ -1,6 +1,6 @@
 import api from "./api";
 import type { ApiResponse } from "./apiTypes";
-import type { AuthResult, LoginRequest, RegisterRequest, User } from "@/redux/auth/type";
+import type { AuthResult, LoginRequest, RegisterRequest, UpdateProfileRequest, User } from "@/redux/auth/type";
 
 // Returns the full envelope (not just `.data`) so callers can surface the
 // backend's own success message (e.g. via react-toastify) instead of a
@@ -25,6 +25,11 @@ export const meApi = async (): Promise<User> => {
   return response.data.data;
 };
 
+export const updateProfileApi = async (payload: UpdateProfileRequest): Promise<ApiResponse<User>> => {
+  const response = await api.patch<ApiResponse<User>>("/users/me", payload);
+  return response.data;
+};
+
 export const forgotPasswordApi = async (email: string): Promise<ApiResponse<null>> => {
   const response = await api.post<ApiResponse<null>>("/auth/forgot-password", { email });
   return response.data;
@@ -32,5 +37,10 @@ export const forgotPasswordApi = async (email: string): Promise<ApiResponse<null
 
 export const resetPasswordApi = async (token: string, newPassword: string): Promise<ApiResponse<null>> => {
   const response = await api.post<ApiResponse<null>>("/auth/reset-password", { token, newPassword });
+  return response.data;
+};
+
+export const changePasswordApi = async (currentPassword: string, newPassword: string): Promise<ApiResponse<null>> => {
+  const response = await api.post<ApiResponse<null>>("/auth/change-password", { currentPassword, newPassword });
   return response.data;
 };
