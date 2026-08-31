@@ -9,6 +9,7 @@ import ledgerReducer from "./ledger/reducer";
 import dashboardReducer from "./dashboard/reducer";
 import settingReducer from "./setting/reducer";
 import notificationReducer from "./notification/reducer";
+import reportReducer from "./report/reducer";
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     dashboard: dashboardReducer,
     setting: settingReducer,
     notification: notificationReducer,
+    report: reportReducer,
   },
 });
 

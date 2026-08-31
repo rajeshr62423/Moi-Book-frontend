@@ -17,6 +17,8 @@ import {
   MoiIcon,
   MoiIconFilled,
   MoonIcon,
+  ReportIcon,
+  ReportIconFilled,
   SettingsIcon,
   SettingsIconFilled,
   SunIcon,
@@ -31,6 +33,7 @@ const NAV_ITEMS = [
   { href: "/guests", key: "navGuests" as const, Icon: GuestsIcon, IconFilled: GuestsIconFilled },
   { href: "/ledger", key: "navLedger" as const, Icon: LedgerIcon, IconFilled: LedgerIconFilled },
   { href: "/vendors", key: "navVendors" as const, Icon: VendorsIcon, IconFilled: VendorsIconFilled },
+  { href: "/reports", key: "navReports" as const, Icon: ReportIcon, IconFilled: ReportIconFilled },
   { href: "/settings", key: "navSettings" as const, Icon: SettingsIcon, IconFilled: SettingsIconFilled },
 ];
 

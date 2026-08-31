@@ -197,6 +197,24 @@ export function SettingsIconFilled(props: IconProps) {
   );
 }
 
+export function ReportIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 20V11M10 20V6M16 20v-8M2 20h20" />
+    </svg>
+  );
+}
+
+export function ReportIconFilled(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <rect x="2.5" y="11" width="4" height="9.5" rx="1.2" />
+      <rect x="9" y="5.5" width="4" height="15" rx="1.2" opacity="0.75" />
+      <rect x="15.5" y="13.5" width="4" height="7" rx="1.2" opacity="0.5" />
+    </svg>
+  );
+}
+
 export function MoiIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
