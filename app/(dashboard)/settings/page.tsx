@@ -18,6 +18,7 @@ import { changePasswordApi } from "@/services/authService";
 import { extractApiErrorMessage } from "@/services/apiTypes";
 import type { CurrencyOption, DateFormatOption, LanguageOption, TimeFormatOption } from "@/redux/setting/type";
 import {
+  AppDownloadIcon,
   BackupIcon,
   DocumentIcon,
   MoonIcon,
@@ -89,6 +90,7 @@ const QUICK_CARDS = [
   { Icon: DocumentIcon, titleKey: "templates" as const, subKey: "manageTemplates" as const, href: "/settings/templates" },
   { Icon: TeamIcon, titleKey: "inviteTeam" as const, subKey: "addTeamMembers" as const },
   { Icon: PrivacyIcon, titleKey: "privacy" as const, subKey: "managePrivacy" as const },
+  { Icon: AppDownloadIcon, titleKey: "downloadApp" as const, subKey: "getMobileApp" as const, downloadHref: "/downloads/app-release.apk" },
 ];
 
 export default function SettingsPage() {
@@ -419,7 +421,7 @@ export default function SettingsPage() {
             <h3>{t("quickSettings")}</h3>
           </div>
           <div className="quick-grid">
-            {QUICK_CARDS.map(({ Icon, titleKey, subKey, href }) => {
+            {QUICK_CARDS.map(({ Icon, titleKey, subKey, href, downloadHref }) => {
               const content = (
                 <>
                   <Icon />
@@ -427,6 +429,13 @@ export default function SettingsPage() {
                   <div className="s">{t(subKey)}</div>
                 </>
               );
+              if (downloadHref) {
+                return (
+                  <a className="quick-card" href={downloadHref} download key={titleKey}>
+                    {content}
+                  </a>
+                );
+              }
               return href ? (
                 <Link className="quick-card" href={href} key={titleKey}>
                   {content}

@@ -509,3 +509,13 @@ export function MailIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function AppDownloadIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M12 8v7M9 12.5l3 3 3-3" />
+      <path d="M10.5 19h3" />
+    </svg>
+  );
+}
