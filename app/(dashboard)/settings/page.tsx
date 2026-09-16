@@ -9,7 +9,7 @@ import AvatarUpload from "@/components/ui/AvatarUpload";
 import Select from "@/components/ui/Select";
 import PasswordField from "@/components/auth/PasswordField";
 import { useI18n } from "@/lib/i18n";
-import { useHideAppLoaderOnMount } from "@/lib/ui";
+import { useHideAppLoaderOnMount, useModal } from "@/lib/ui";
 import { ACCENTS, useTheme, type Appearance } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
@@ -85,20 +85,21 @@ const TAB_LABEL_KEYS: Record<TabKey, "tabProfile" | "tabPreferences" | "tabNotif
   payment: "tabPaymentSettings",
 };
 
-const QUICK_CARDS = [
-  { Icon: BackupIcon, titleKey: "backupExport" as const, subKey: "exportYourData" as const },
-  { Icon: DocumentIcon, titleKey: "templates" as const, subKey: "manageTemplates" as const, href: "/settings/templates" },
-  { Icon: TeamIcon, titleKey: "inviteTeam" as const, subKey: "addTeamMembers" as const },
-  { Icon: PrivacyIcon, titleKey: "privacy" as const, subKey: "managePrivacy" as const },
-  { Icon: AppDownloadIcon, titleKey: "downloadApp" as const, subKey: "getMobileApp" as const, downloadHref: "/downloads/app-release.apk" },
-];
-
 export default function SettingsPage() {
   useHideAppLoaderOnMount();
   const { t, setLang } = useI18n();
   const { user, updateProfile } = useAuth();
   const { settings, updateSettings } = useSettings();
   const { accent, appearance, setAccent, setAppearance } = useTheme();
+  const { openModal } = useModal();
+
+  const QUICK_CARDS = [
+    { Icon: BackupIcon, titleKey: "backupExport" as const, subKey: "exportYourData" as const },
+    { Icon: DocumentIcon, titleKey: "templates" as const, subKey: "manageTemplates" as const, href: "/settings/templates" },
+    { Icon: TeamIcon, titleKey: "inviteTeam" as const, subKey: "addTeamMembers" as const, onClick: () => openModal("inviteTeam") },
+    { Icon: PrivacyIcon, titleKey: "privacy" as const, subKey: "managePrivacy" as const },
+    { Icon: AppDownloadIcon, titleKey: "downloadApp" as const, subKey: "getMobileApp" as const, downloadHref: "/downloads/app-release.apk" },
+  ];
   const [tab, setTab] = useState<TabKey>("profile");
   const [pendingAccent, setPendingAccent] = useState(accent);
   const [pendingAppearance, setPendingAppearance] = useState<Appearance>(appearance);
@@ -421,7 +422,7 @@ export default function SettingsPage() {
             <h3>{t("quickSettings")}</h3>
           </div>
           <div className="quick-grid">
-            {QUICK_CARDS.map(({ Icon, titleKey, subKey, href, downloadHref }) => {
+            {QUICK_CARDS.map(({ Icon, titleKey, subKey, href, downloadHref, onClick }) => {
               const content = (
                 <>
                   <Icon />
@@ -436,11 +437,21 @@ export default function SettingsPage() {
                   </a>
                 );
               }
-              return href ? (
-                <Link className="quick-card" href={href} key={titleKey}>
-                  {content}
-                </Link>
-              ) : (
+              if (href) {
+                return (
+                  <Link className="quick-card" href={href} key={titleKey}>
+                    {content}
+                  </Link>
+                );
+              }
+              if (onClick) {
+                return (
+                  <button type="button" className="quick-card" onClick={onClick} key={titleKey}>
+                    {content}
+                  </button>
+                );
+              }
+              return (
                 <div className="quick-card" key={titleKey}>
                   {content}
                 </div>

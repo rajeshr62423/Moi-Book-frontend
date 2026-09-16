@@ -10,6 +10,7 @@ import AddGuestModal from "@/components/modals/AddGuestModal";
 import AddVendorModal from "@/components/modals/AddVendorModal";
 import CreateMoiModal from "@/components/modals/CreateMoiModal";
 import LedgerFormModal from "@/components/modals/LedgerFormModal";
+import InviteTeamModal from "@/components/modals/InviteTeamModal";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isReady } = useAuth();
@@ -31,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <AddVendorModal />
       <CreateMoiModal />
       <LedgerFormModal />
+      <InviteTeamModal />
     </div>
   );
 }
