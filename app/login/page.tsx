@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import PasswordField from "@/components/auth/PasswordField";
 import Checkbox from "@/components/ui/Checkbox";
 import { validEmail } from "@/lib/authValidation";
 import { useAuth } from "@/lib/auth";
+import { getRememberedEmail, setRememberedEmail } from "@/lib/tokenStorage";
 
 interface LoginValues {
   email: string;
@@ -35,6 +37,7 @@ export default function LoginPage() {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const result = await login({ email: values.email, password: values.password });
+        setRememberedEmail(values.remember ? values.email : null);
         toast.success(result.message);
         router.push("/dashboard");
       } catch (err) {
@@ -44,6 +47,18 @@ export default function LoginPage() {
       }
     },
   });
+
+  // Prefilled after mount, not via initialValues, so the server-rendered
+  // markup (which has no access to localStorage) matches the client on
+  // first paint and React doesn't flag a hydration mismatch.
+  useEffect(() => {
+    const remembered = getRememberedEmail();
+    if (remembered) {
+      formik.setFieldValue("email", remembered);
+      formik.setFieldValue("remember", true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function loginWithGoogle() {
     toast.info("Google sign-in isn't set up yet — use email and password.");

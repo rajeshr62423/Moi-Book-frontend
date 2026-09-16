@@ -6,6 +6,7 @@ import type { User } from "@/redux/auth/type";
 const SESSION_KEY = "moibook-session";
 const ACCESS_TOKEN_KEY = "moibook-access-token";
 const REFRESH_TOKEN_KEY = "moibook-refresh-token";
+const REMEMBERED_EMAIL_KEY = "moibook-remembered-email";
 
 interface StoredSession {
   user: User;
@@ -73,5 +74,24 @@ export function clearStoredSession(): void {
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+  } catch {}
+}
+
+/** "Remember me" on the login form — persists only the email, never the password. */
+export function getRememberedEmail(): string | null {
+  try {
+    return localStorage.getItem(REMEMBERED_EMAIL_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setRememberedEmail(email: string | null): void {
+  try {
+    if (email) {
+      localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
+    } else {
+      localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+    }
   } catch {}
 }

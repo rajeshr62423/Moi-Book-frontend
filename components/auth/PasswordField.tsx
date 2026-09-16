@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { EyeIcon } from "@/components/icons";
+import { EyeIcon, EyeOffIcon } from "@/components/icons";
 
 interface PasswordFieldProps {
   label: string;
@@ -30,8 +30,13 @@ export default function PasswordField({ label, value, onChange, placeholder, aut
           onChange={(e) => onChange(e.target.value)}
           required
         />
-        <button type="button" className="auth-pw-toggle" aria-label="Show password" onClick={() => setShow((v) => !v)}>
-          <EyeIcon />
+        <button
+          type="button"
+          className="auth-pw-toggle"
+          aria-label={show ? "Hide password" : "Show password"}
+          onClick={() => setShow((v) => !v)}
+        >
+          {show ? <EyeOffIcon /> : <EyeIcon />}
         </button>
       </div>
       {error && <div className="error">{error}</div>}
