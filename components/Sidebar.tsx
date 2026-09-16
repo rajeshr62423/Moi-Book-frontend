@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import { useSettings } from "@/lib/settings";
 import { useTheme } from "@/lib/theme";
 import { useAppLoader, useSidebar } from "@/lib/ui";
 import {
@@ -40,9 +41,16 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { t, lang, setLang } = useI18n();
+  const { updateSettings } = useSettings();
   const { mode, setAppearance } = useTheme();
   const { isOpen, close } = useSidebar();
   const { show } = useAppLoader();
+
+  function toggleLang() {
+    const next = lang === "en" ? "ta" : "en";
+    setLang(next);
+    updateSettings({ language: next }).catch(() => {});
+  }
 
   const isDark = mode === "dark";
 
@@ -119,7 +127,7 @@ export default function Sidebar() {
             role="switch"
             aria-checked={lang === "ta"}
             title="Toggle language"
-            onClick={() => setLang(lang === "en" ? "ta" : "en")}
+            onClick={toggleLang}
           >
             <span className="lang-switch-label en">EN</span>
             <span className="lang-switch-label ta">தமிழ்</span>

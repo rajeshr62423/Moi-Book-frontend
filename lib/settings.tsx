@@ -17,9 +17,14 @@ import { useI18n } from "@/lib/i18n";
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
   const { user, isReady } = useAuth();
-  const { lang, setLang } = useI18n();
+  const { setLang } = useI18n();
   const settings = useSelector((state: RootState) => state.setting.settings);
   const fetchedForUserId = useRef<string | null>(null);
+  // Tracks the last settings.language we've already applied, so this effect
+  // only reacts to a *new* value arriving from the server (fetch/update) —
+  // not to `lang` itself, which would fight any local change (e.g. the
+  // sidebar toggle) by immediately reverting it back to the stale settings.
+  const syncedLanguage = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isReady || !user) return;
@@ -29,10 +34,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [isReady, user, dispatch]);
 
   useEffect(() => {
-    if (settings && settings.language !== lang) {
-      setLang(settings.language);
-    }
-  }, [settings, lang, setLang]);
+    if (!settings || syncedLanguage.current === settings.language) return;
+    syncedLanguage.current = settings.language;
+    setLang(settings.language);
+  }, [settings, setLang]);
 
   return <>{children}</>;
 }
