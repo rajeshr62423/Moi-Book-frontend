@@ -115,7 +115,12 @@ export default function DashboardPage() {
     return items.slice(0, 4);
   }, [summary, t, settings?.currency]);
 
-  const nearestEvent = upcomingCelebs[0] ?? events[0];
+  // When every event is in the past, fall back to the most recently-passed
+  // one (not an arbitrary events[0] in whatever order the API returned).
+  const mostRecentPastEvent = useMemo(() => {
+    return [...events].filter((ev) => ev.date < today).sort((a, b) => b.date.localeCompare(a.date))[0];
+  }, [events, today]);
+  const nearestEvent = upcomingCelebs[0] ?? mostRecentPastEvent;
 
   const journey = useMemo(() => {
     const step = (pct: number): "done" | "current" | "pending" => (pct >= 1 ? "done" : pct > 0 ? "current" : "pending");
